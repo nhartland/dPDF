@@ -41,10 +41,10 @@ NostateMLP::~NostateMLP()
   delete[] fOutput;
 }
 
-void NostateMLP::Compute(const gsl_vector* par, const real* in, real* out) const
+void NostateMLP::Compute(const gsl_vector* par, real const& x, real* out) const
 {
-  for (int i=0; i<fArch[0]; i++)
-    fOutput[i] = in[i];
+  fOutput[0] = x;
+  fOutput[1] = log(x);
 
   int ipar = 0, lout = 0;
   int iout = fArch[0];

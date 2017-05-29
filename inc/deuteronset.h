@@ -26,11 +26,8 @@ using std::vector;
 
     virtual void GetPDF(NNPDF::real const& x, NNPDF::real const& Q2, int const& n, NNPDF::real* pdf) const
     {
-      real *xvals = new NNPDF::real[2]();
-      xvals[0] = x; xvals[1] = static_cast<NNPDF::real>( log(x) );
-      fParametrisation.Compute(fParameters[n], xvals, pdf);
+      fParametrisation.Compute(fParameters[n], x, pdf);
       // for (int i=0; i<14; i++) std::cout << x <<"  "<<Q2<<"  "<<n<<"  "<<i <<"  "<<pdf[i] <<std::endl;
-      delete[] xvals;
     	return;
     };
 

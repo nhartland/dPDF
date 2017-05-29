@@ -24,7 +24,7 @@ public:
   NostateMLP(std::vector<int> const& arch);
   ~NostateMLP();
 
-  void Compute(const gsl_vector* par, const real* in, real* out) const;
+  void Compute(const gsl_vector* par, real const& x, real* out) const;
   int const& GetNParameters() const {return fNParameters;};
 protected:
   const std::vector<int> fArch;

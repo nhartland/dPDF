@@ -33,13 +33,8 @@ int main(int argc, char* argv[]) {
   for (int i=0; i<network.GetNParameters(); i++) std::cout << gsl_vector_get(parameters, i) <<std::endl;
 
 
-
-  NNPDF::real* xvals = new NNPDF::real[2];
-  xvals[0] = 0;
-  xvals[1] = 0;
-
   NNPDF::real* ovals = new NNPDF::real[5]();
-  network.Compute(parameters, xvals, ovals);
+  network.Compute(parameters, 0.1, ovals);
   for (int i=0; i<5; i++) std::cout << i <<"  "<<ovals[i]<<std::endl;
   // std::cout << std::endl;
   // min.NormVect(parameters);

@@ -75,17 +75,27 @@ int main(int argc, char* argv[]) {
   for (int i=0; i<lambda; i++)
     min.NormVect(dpdf.GetParameters(i));
 
+  // NNPDF::real* out = new NNPDF::real[5]();
+  // dpdf.GetParametrisation().Compute(dpdf.GetParameters(0), 0.1, out);
+  // for (int i=0; i<5; i++)
+  //   std::cout << out[i] <<"  "<< gsl_vector_get(dpdf.GetParameters(0), 0)<<std::endl;
+
   // NNPDF::real* chi2 = new NNPDF::real[lambda]();
   // for (auto exp : trainExp)
   //   FastAddChi2(&dpdf, &exp, chi2);
   // for (int i=0; i<lambda; i++)
-  // {
   //   std::cout << i <<"  "<<chi2[i]<<std::endl;
-  // }
+  // delete[] chi2;
 
   for (int i=0; i< 100; i++)
     min.Iterate(&dpdf, trainExp);
 
+  NNPDF::real* chi2 = new NNPDF::real[lambda]();
+  for (auto exp : trainExp)
+    FastAddChi2(&dpdf, &exp, chi2);
+  for (int i=0; i<lambda; i++)
+    std::cout << i <<"  "<<chi2[i]<<std::endl;
+  delete[] chi2;
   exit(0);
 }
 

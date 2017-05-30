@@ -269,7 +269,7 @@ void CMAESMinimizer::CSA( gsl_vector const* yavg )
   const double sigrat = fCMAES.csigma/fCMAES.dsigma;
   fSigma = fSigma*exp(sigrat*(sqrt(pnorm)/fCMAES.expN - 1.0));
 
-  std::cout << "CSA - StepSize: "<<fSigma <<" expFac: "<<sqrt(pnorm)/fCMAES.expN;
+  std::cout << "CSA - StepSize: "<<fSigma <<" expFac: "<<sqrt(pnorm)/fCMAES.expN << std::endl;
 }
 
 // Covariance matrix adaptation

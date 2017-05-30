@@ -10,7 +10,7 @@ using std::vector;
   public:
     DeuteronSet(libconfig::Config const& s):
     PDFSet(s.lookup("fit.name"), s.lookup("fit.lambda"), ER_NONE),
-    fParametrisation({2,5,3}),
+    fParametrisation({2,10,5}),
     fBestFit(gsl_vector_calloc( fParametrisation.GetNParameters() ))
     {
       for (int i=0; i<fMembers; i++)
@@ -20,12 +20,14 @@ using std::vector;
     ~DeuteronSet(){ for (auto i : fParameters) gsl_vector_free(i); }
 
     void InitPDFSet() {return;};
+    NostateMLP const& GetParametrisation() const {return fParametrisation;};
     int const& GetNParameters() const {return fParametrisation.GetNParameters();}; 
     gsl_vector* GetParameters( int const& imem ) { return fParameters[imem]; };
     gsl_vector* GetBestFit()  { return fBestFit; };
 
     virtual void GetPDF(NNPDF::real const& x, NNPDF::real const& Q2, int const& n, NNPDF::real* pdf) const
     {
+      for (int i=0; i<14; i++) pdf[i] = 0;
       fParametrisation.Compute(fParameters[n], x, pdf);
       // for (int i=0; i<14; i++) std::cout << x <<"  "<<Q2<<"  "<<n<<"  "<<i <<"  "<<pdf[i] <<std::endl;
     	return;

@@ -27,7 +27,7 @@ NostateMLP::NostateMLP(std::vector<int> const& arch):
 fArch(arch),
 fNParameters(get_nparam(arch)),
 fNOutputs(std::accumulate(arch.begin(), arch.end(), 0)),
-fOutput(new real[fNOutputs])
+fOutput(new real[fNOutputs]())
 {
   if (fArch[0] != 2) 
   {
@@ -56,9 +56,12 @@ void NostateMLP::Compute(const gsl_vector* par, real const& x, real* out) const
       for (int k=0; k<fArch[i-1]; k++)
         h-= gsl_vector_get(par,ipar++)*fOutput[lout+k];
       h+=gsl_vector_get(par,ipar++); // Bias
-      fOutput[iout++] =  tanh(h);
+      if (j == fArch.size() - 1)
+        fOutput[iout++] =  h;
+      else
+        fOutput[iout++] =  tanh(h);
     }
-    lout += fArch[i];
+    lout += fArch[i-1];
   }
 
   for (int i=0; i<fArch[fArch.size()-1]; i++)

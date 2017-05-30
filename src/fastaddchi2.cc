@@ -29,7 +29,6 @@ void FastAddChi2(const PDFSet* pdf, const DataSet* set, real* chi2)
 
   // Perform convolution and chi^2 calculation
   ThPredictions::Convolute(pdf,set,theory);
-
   // Compute chi2
   NNPDF::ComputeChi2(set,nMem,theory,chi2);
 

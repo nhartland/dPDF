@@ -14,10 +14,6 @@
 
 using NNPDF::real;
 
-/**
- *  \class MultiLayerPerceptron
- *  \brief General MLP class
- */
 class NostateMLP
 {
 public:

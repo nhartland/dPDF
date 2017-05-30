@@ -87,7 +87,7 @@ int main(int argc, char* argv[]) {
   //   std::cout << i <<"  "<<chi2[i]<<std::endl;
   // delete[] chi2;
 
-  for (int i=0; i< 100; i++)
+  for (int i=0; i< 1000; i++)
     min.Iterate(&dpdf, trainExp);
 
   NNPDF::real* chi2 = new NNPDF::real[lambda]();

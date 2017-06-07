@@ -20,6 +20,7 @@ int get_nparam(std::vector<int> const& arch)
   int nparam = 0;
   for (int i=1; i<arch.size(); i++)
     nparam += arch[i]*arch[i-1] + arch[i];
+  nparam -= arch.back(); // Remove last layer bias
   return nparam;
 }
 
@@ -55,11 +56,13 @@ void NostateMLP::Compute(const gsl_vector* par, real const& x, real* out) const
       real h=0;
       for (int k=0; k<fArch[i-1]; k++)
         h-= gsl_vector_get(par,ipar++)*fOutput[lout+k];
-      h+=gsl_vector_get(par,ipar++);
       if (i == fArch.size() - 1)
-        fOutput[iout++] =  h;
+      { fOutput[iout++] =  h; }
       else
+      {
+        h+=gsl_vector_get(par,ipar++);
         fOutput[iout++] =  tanh(h);
+      }
     }
     lout += fArch[i-1];
   }

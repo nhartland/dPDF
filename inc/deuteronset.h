@@ -16,7 +16,7 @@ using std::vector;
   public:
     DeuteronSet(libconfig::Config const& s):
     PDFSet(s.lookup("fit.name"), s.lookup("fit.lambda"), ER_NONE),
-    fParametrisation({2,10, n_activeFlavours}),
+    fParametrisation({2,20, n_activeFlavours}),
     fBestFit(gsl_vector_calloc( fParametrisation.GetNParameters() )),
     nn_1(new double[fMembers*n_activeFlavours])
     {

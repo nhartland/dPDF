@@ -55,8 +55,8 @@ void NostateMLP::Compute(const gsl_vector* par, real const& x, real* out) const
       real h=0;
       for (int k=0; k<fArch[i-1]; k++)
         h-= gsl_vector_get(par,ipar++)*fOutput[lout+k];
-      h+=gsl_vector_get(par,ipar++); // Bias
-      if (j == fArch.size() - 1)
+      h+=gsl_vector_get(par,ipar++);
+      if (i == fArch.size() - 1)
         fOutput[iout++] =  h;
       else
         fOutput[iout++] =  tanh(h);

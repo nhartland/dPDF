@@ -72,20 +72,6 @@ int main(int argc, char* argv[]) {
   const int nparam = dpdf.GetNParameters();
   CMAESMinimizer min(nparam, lambda, dPDFconfig.lookup("fit.sigma"));
   min.NormVect(dpdf.GetBestFit());
-  for (int i=0; i<lambda; i++)
-    min.NormVect(dpdf.GetParameters(i));
-
-  // NNPDF::real* out = new NNPDF::real[5]();
-  // dpdf.GetParametrisation().Compute(dpdf.GetParameters(0), 0.1, out);
-  // for (int i=0; i<5; i++)
-  //   std::cout << out[i] <<"  "<< gsl_vector_get(dpdf.GetParameters(0), 0)<<std::endl;
-
-  // NNPDF::real* chi2 = new NNPDF::real[lambda]();
-  // for (auto exp : trainExp)
-  //   FastAddChi2(&dpdf, &exp, chi2);
-  // for (int i=0; i<lambda; i++)
-  //   std::cout << i <<"  "<<chi2[i]<<std::endl;
-  // delete[] chi2;
 
   for (int i=0; i< 1000; i++)
     min.Iterate(&dpdf, trainExp);
@@ -94,8 +80,14 @@ int main(int argc, char* argv[]) {
   for (auto exp : trainExp)
     FastAddChi2(&dpdf, &exp, chi2);
   for (int i=0; i<lambda; i++)
-    std::cout << i <<"  "<<chi2[i]<<std::endl;
+    std::cout << i <<"  "<<chi2[i]/nData<<std::endl;
   delete[] chi2;
+
+  std::stringstream filename;
+  filename << "res/replica_"<<replica<<".dat";
+  ofstream outfile; outfile.open(filename.str());
+  dpdf.ExportBestFit(outfile);
+
   exit(0);
 }
 

@@ -4,21 +4,24 @@
 #include "fk_xgrid.h"
 #include <libconfig.h++>
 #include <gsl/gsl_vector.h>
+#include <gsl/gsl_integration.h>
+#include <limits>
 #include <array>
 using NNPDF::real;
 using std::vector;
 
   static const std::vector<int> activeFlavours = {1,2}; // 10
   static const int n_activeFlavours = static_cast<int>(activeFlavours.size());
-
   class DeuteronSet : public NNPDF::PDFSet
   {
   public:
     DeuteronSet(libconfig::Config const& s):
     PDFSet(s.lookup("fit.name"), s.lookup("fit.lambda"), ER_NONE),
     fParametrisation({2,20, n_activeFlavours}),
+    fGSLWork( gsl_integration_workspace_alloc (10000) ),
     fBestFit(gsl_vector_calloc( fParametrisation.GetNParameters() )),
-    nn_1(new double[fMembers*n_activeFlavours])
+    nn_1(new double[fMembers*n_activeFlavours]),
+    nn_norm(new double[fMembers*n_activeFlavours])
     {
       for (int i=0; i<fMembers; i++)
         fParameters.push_back(gsl_vector_calloc( fParametrisation.GetNParameters() ) );
@@ -26,18 +29,28 @@ using std::vector;
     };
     ~DeuteronSet(){ 
       for (auto i : fParameters) gsl_vector_free(i); 
+      gsl_integration_workspace_free(fGSLWork);
       delete[] nn_1;
+      delete[] nn_norm;
     }
 
     // Compute preprocessing
     void InitPDFSet() {
-      std::fill(nn_1, nn_1 + fMembers*n_activeFlavours, 0);    
+      std::fill(nn_1,    nn_1    + fMembers*n_activeFlavours, 0);   
+      std::fill(nn_norm, nn_norm + fMembers*n_activeFlavours, 1);     
       for (int n=0; n<fMembers; n++)
       {
+        // Compute large-x preprocessing
         std::array<NNPDF::real, 14> pdf;
         GetPDF(1,1,n, &pdf[0]);
         for (int ifl=0; ifl<n_activeFlavours; ifl++)
           nn_1[n_activeFlavours*n + ifl] = pdf[activeFlavours[ifl]];
+
+        // Compute MSR normalisation
+        bool gslerror = false;
+        const double xsng = IntegratePDF(n,1,1,PDFSet::XFX,gslerror,fGSLWork);
+        const double xglu = IntegratePDF(n,2,1,PDFSet::XFX,gslerror,fGSLWork);
+        nn_norm[n_activeFlavours*n +1] = (1.0-xsng)/xglu;
       }
     };
 
@@ -52,11 +65,20 @@ using std::vector;
       fParametrisation.Compute(fParameters[n], x, fitbasis);
       for (int i=0; i<14; i++) pdf[i] = 0;
       for (int i =0; i<n_activeFlavours; i++ )
-        pdf[activeFlavours[i]] = std::abs(std::abs(fitbasis[i]) - nn_1[n_activeFlavours*n + i]);
+        pdf[activeFlavours[i]] = nn_norm[n_activeFlavours*n + i]*std::abs(std::abs(fitbasis[i]) - nn_1[n_activeFlavours*n + i]);
       pdf[10] = pdf[1]; // T8 = Singlet
       delete[] fitbasis; 
     	return;
     };
+
+    double ComputeSumRule( int n ) const
+    {
+      bool gslerror = false;
+      const double xsng = IntegratePDF(n,1,1,PDFSet::XFX,gslerror,fGSLWork);
+      const double xglu = IntegratePDF(n,2,1,PDFSet::XFX,gslerror,fGSLWork);
+      return xsng+xglu;
+    }
+
 
     void ExportBestFit(std::ostream& os)
     {
@@ -80,7 +102,9 @@ using std::vector;
 
   private:
     NostateMLP fParametrisation;
+    gsl_integration_workspace* fGSLWork; 
     gsl_vector* fBestFit;
     vector<gsl_vector*> fParameters;
-    double* nn_1;
+    double* nn_1;     // NN(1) for large-x preprocessing
+    double* nn_norm;  // Multiplicative normalisation for PDF 
   };

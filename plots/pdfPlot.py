@@ -9,8 +9,8 @@ import numpy as np
 
 normalise = True
 colours = ['r', 'b', 'g']
-pdfnames = ['Singlet', 'Gluon', 'T3', 'T8']
-mxpdf = 4
+pdfnames = ['Singlet', 'Gluon']
+mxpdf = 2
 
 plotReplicas = True
 
@@ -139,8 +139,8 @@ for pdfidx in xrange(0,mxpdf):
   lax.set_xlim([1E-5,0.1])
 
   # set limits
-  ax.set_ylim([-5, 8])
-  lax.set_ylim([-5,8])
+  ax.set_ylim([0, 2])
+  lax.set_ylim([0,2])
 
   # Legend
   legend = lax.legend(fontsize=10, loc='best')

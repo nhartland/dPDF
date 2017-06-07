@@ -21,7 +21,13 @@
 using namespace Colour;
 using namespace std;
 
+void gsl_handler (const char * msg, const char * source, int line, int)
+{ std::cerr << "gsl: " << source<<":"<<line<<": " <<msg <<std::endl;}
+
 int main(int argc, char* argv[]) {
+
+  // Set GSL error handler
+  gsl_set_error_handler (&gsl_handler);
 
   if (argc < 3)
   {

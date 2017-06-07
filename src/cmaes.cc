@@ -170,7 +170,7 @@ void CMAESMinimizer::ComputeEigensystem()
     double min, max;
     gsl_vector_minmax (E, &min, &max);
     const double K = max/min;
-
+    std::cout << "CMA - ConditionNumber: " << K <<std::endl;
     // Initialise D, invD
     for (size_t i=0; i<fCMAES.n; i++)
     {

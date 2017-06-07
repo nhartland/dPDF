@@ -41,7 +41,6 @@ bool passKinCuts(libconfig::Config const& settings, NNPDF::DataSet const& set, i
     const double W2 = Q2*(1-x)/x;
     double W2cut; settings.lookupValue("cuts.W2cut", W2cut);
     double Q2cut; settings.lookupValue("cuts.Q2cut", Q2cut);
-    double SRcut; settings.lookupValue("cuts.sigRcut", SRcut);
     if (W2 <= W2cut) return false;
     if (Q2 <= Q2cut) return false;
   } 
@@ -252,9 +251,9 @@ NNPDF::DataSet LoadDataSet(libconfig::Setting const& set, libconfig::Config cons
     std::stringstream datname;
     std::stringstream sysname;
 
-    const std::string cdata_path = "./data";
+    const std::string cdata_path = "./data/commondata";
     datname << cdata_path<<"/DATA_"+setname+".dat";
-    sysname << cdata_path<<"/SYSTYPE_"+setname+"_DEFAULT.dat";
+    sysname << cdata_path<<"/systypes/SYSTYPE_"+setname+"_DEFAULT.dat";
 
     // Read commondata file
     NNPDF::CommonData cd = NNPDF::CommonData::ReadFile(datname.str(), sysname.str());

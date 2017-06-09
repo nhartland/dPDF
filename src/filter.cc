@@ -2,6 +2,7 @@
 
 #include "filter.h"
 #include "colour.h"
+#include "proton.h"
 
 #include <NNPDF/fastkernel.h>
 #include <NNPDF/pdfset.h>
@@ -244,7 +245,10 @@ void InitData(libconfig::Config const& settings, std::vector<NNPDF::Experiment>&
 /* Function to return a dataset */ 
 NNPDF::DataSet LoadDataSet(libconfig::Setting const& set, libconfig::Config const& settings)
 {
- 	  std::string setname;
+    // Generate any required C-factor normalisations
+    GenerateNormalisations(set, settings);
+ 	
+    std::string setname;
     set.lookupValue("name", setname);
 
 	  // Filenames
@@ -258,6 +262,17 @@ NNPDF::DataSet LoadDataSet(libconfig::Setting const& set, libconfig::Config cons
     // Read commondata file
     NNPDF::CommonData cd = NNPDF::CommonData::ReadFile(datname.str(), sysname.str());
 
+    // Read normalisation C-factors
+    std::vector<std::string> cfactors;
+    if (set.exists("normby_proton"))
+    {
+      const int replica = settings.lookup("fit.replica");
+      const char *setname   = set["name"];
+      std::stringstream cfac_path;
+      cfac_path << "res/norm/CF_"<< setname << "_"<<replica<<".dat";
+      cfactors.push_back(cfac_path.str());
+    }
+
     // Read FK table operator
     std::string fkopstring = "NULL";
 	  set.lookupValue("operator", fkopstring);
@@ -270,7 +285,7 @@ NNPDF::DataSet LoadDataSet(libconfig::Setting const& set, libconfig::Config cons
     	const char *tablename = set["tables"][i];
     	std::stringstream fkpath;
     	fkpath <<  "theory_"<<theoryIndex<<"/FK_"<<tablename<<".dat";
-    	fkTables.push_back(new NNPDF::FKTable(fkpath.str()));
+    	fkTables.push_back(new NNPDF::FKTable(fkpath.str(), cfactors));
 	  }
 
 	// Note FKSet owns its FKTables, no need to delete them

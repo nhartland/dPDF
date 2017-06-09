@@ -40,7 +40,8 @@ int main(int argc, char* argv[]) {
 
   const std::string fitname = dPDFconfig.lookup("fit.name");
   const int replica = atoi(argv[2]);
-
+  libconfig::Setting& fitsetting = dPDFconfig.lookup("fit");
+  libconfig::Setting & replica_setting = fitsetting.add ("replica", libconfig::Setting::TypeInt); replica_setting = replica;
   cout << FG_YELLOW << "---------------------------------------------------------------------"<<FG_DEFAULT <<endl;
 
   // Initialise RNG

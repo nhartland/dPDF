@@ -17,6 +17,7 @@
 #include "cmaes.h"
 #include "filter.h"
 #include "colour.h"
+#include "proton.h"
 
 using namespace Colour;
 using namespace std;
@@ -94,6 +95,12 @@ int main(int argc, char* argv[]) {
   filename << "res/replica_"<<replica<<".dat";
   ofstream outfile; outfile.open(filename.str());
   dpdf.ExportBestFit(outfile);
+
+  std::stringstream protonfilename;
+  protonfilename << "prt/replica_"<<replica<<".dat";
+  ofstream protonfile; protonfile.open(protonfilename.str());
+  ExportProton(dPDFconfig, protonfile);
+
 
   exit(0);
 }

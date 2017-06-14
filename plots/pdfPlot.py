@@ -6,10 +6,11 @@ from matplotlib.ticker import MaxNLocator
 from operator import add, sub
 import sys, os, math
 import numpy as np
+import glob
 
 normalise = True
 colours = ['r', 'b', 'g']
-pdfnames = ['Singlet', 'Gluon']
+pdfnames = ['Singlet', 'Gluon', 'T8']
 mxpdf = 2
 
 plotReplicas = True
@@ -65,14 +66,14 @@ for pdfidx in xrange(0,mxpdf):
 
     irep = 0
     nreps = len(os.listdir(indir))
-    interval = math.floor((nreps-0.68*nreps)/2)
+    interval = 1#math.floor((nreps-0.68*nreps)/2)
 
     print nreps, " Replicas found and processing"
     print interval, " replicas excluded on either side for 68cl"
 
-    for fn in os.listdir(indir):
-      infile = open(indir+fn, 'rb')
-      datafile = open(indir+fn, 'rb')
+    for fn in glob.glob(indir+"*.dat"):
+      infile = open(fn, 'rb')
+      datafile = open(fn, 'rb')
 
       ix = 0 # x point index
       for line in datafile:
@@ -105,7 +106,7 @@ for pdfidx in xrange(0,mxpdf):
       srtreps = np.sort(replicas)
       yCV.append(np.mean(srtreps))
       yER.append(np.std(srtreps))
-      y84.append(srtreps[int(nreps-interval)])
+      y84.append(srtreps[int(nreps-interval-1)])
       y16.append(srtreps[int(interval)])
 
     CVup = map(add, yCV, yER)

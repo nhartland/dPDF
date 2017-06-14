@@ -18,6 +18,7 @@
 #include "cmaes.h"
 #include "filter.h"
 #include "colour.h"
+#include "proton.h"
 
 using namespace Colour;
 using namespace std;
@@ -25,7 +26,18 @@ using namespace std;
 int main(int argc, char* argv[]) {
   NNPDF::RandomGenerator::InitRNG(0,0);
 
-  NNPDF::LHAPDFSet protonset("NNPDF30_nlo_as_0118", NNPDF::PDFSet::ER_MC);
+  NNPDF::LHAPDFSet proton  ("NNPDF30_nlo_as_0118", NNPDF::PDFSet::ER_MC);
+  IsoProtonSet     deuteron("NNPDF30_nlo_as_0118", NNPDF::PDFSet::ER_MC);
+
+  NNPDF::FKTable   p_table("./theory_65/FK_DYE886R_P.dat");
+  NNPDF::FKTable   d_table("./theory_65/FK_DYE886R_D.dat");
+
+  NNPDF::ThPredictions singlebeam(&proton, &d_table);
+  NNPDF::ThPredictions multibeam(&proton, &deuteron, &p_table);
+
+  NNPDF::ThPredictions ratio = multibeam/singlebeam;
+  for (int i=0; i<ratio.GetNData(); i++)
+    std::cout << ratio.GetObsCV(i) <<std::endl;
 
   exit(0);
 }

@@ -66,7 +66,7 @@ using std::vector;
       for (int i=0; i<14; i++) pdf[i] = 0;
       for (int i =0; i<n_activeFlavours; i++ )
         pdf[activeFlavours[i]] = nn_norm[n_activeFlavours*n + i]*std::abs(std::abs(fitbasis[i]) - nn_1[n_activeFlavours*n + i]);
-      pdf[10] = pdf[1]; // T8 = Singlet
+      // pdf[10] = pdf[1]; // T8 = Singlet
       delete[] fitbasis; 
     	return;
     };

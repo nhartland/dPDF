@@ -38,7 +38,8 @@ void ExportProton(NNPDF::LHAPDFSet const& proton, libconfig::Config const& setti
 
   for (int i=0; i<nx; i++)
   {
-    const NNPDF::real x = XGrid::appl_fx(ymin + ((ymax-ymin)/((double) nx - 1))*i);
+    NNPDF::real x = XGrid::appl_fx(ymin + ((ymax-ymin)/((double) nx ))*i);
+    if (x > 1) x = 1;
     std::array<NNPDF::real, 14> pdf; proton.GetPDF(x, Q0*Q0 ,0, &pdf[0]);
     os << x;
     for (int i =0; i<n_activeFlavours; i++ )

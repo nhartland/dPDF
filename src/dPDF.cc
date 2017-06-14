@@ -74,6 +74,9 @@ int main(int argc, char* argv[]) {
   cout              << "                     Fit: "<<fitname<<"     Replica: "<<replica<<"   "<<             endl;
   cout << FG_YELLOW << "---------------------------------------------------------------------"<<FG_DEFAULT <<endl;
 
+  // Initialise proton parametrisation
+  LHAPDFSet pPDF(dPDFconfig.lookup("fit.proton"), replica + 1);
+
   // Initialise prototype parametrisation
   DeuteronSet dpdf(dPDFconfig);
   const int lambda = dpdf.GetMembers();
@@ -82,11 +85,11 @@ int main(int argc, char* argv[]) {
   min.NormVect(dpdf.GetBestFit());
 
   for (int i=0; i< 1000; i++)
-    min.Iterate(&dpdf, trainExp);
+    min.Iterate(&pPDF, &dpdf, trainExp);
 
   NNPDF::real* chi2 = new NNPDF::real[lambda]();
   for (auto exp : trainExp)
-    FastAddChi2(&dpdf, &exp, chi2);
+    FastAddChi2(&pPDF, &dpdf, &exp, chi2);
   for (int i=0; i<lambda; i++)
     std::cout << i <<"  "<<chi2[i]/nData<<std::endl;
   delete[] chi2;
@@ -99,8 +102,8 @@ int main(int argc, char* argv[]) {
   std::stringstream protonfilename;
   protonfilename << "prt/replica_"<<replica<<".dat";
   ofstream protonfile; protonfile.open(protonfilename.str());
-  ExportProton(dPDFconfig, protonfile);
-
+  ExportProton(pPDF, dPDFconfig, protonfile);
+  protonfile.close();
 
   exit(0);
 }

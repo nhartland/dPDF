@@ -23,22 +23,22 @@ using NNPDF::Parametrisation;
 using NNPDF::ThPredictions;
 using NNPDF::RandomGenerator;
 
-void CMAESMinimizer::ComputeErf(DeuteronSet* pdf, vector<Experiment> const& exps)
+void CMAESMinimizer::ComputeErf(LHAPDFSet* proton, DeuteronSet* deuteron, vector<Experiment> const& exps)
 {
   // Init PDF
-  pdf->InitPDFSet();
+  deuteron->InitPDFSet();
 
   // Clear existing chi2 values
-  const int nMem = pdf->GetMembers();
+  const int nMem = deuteron->GetMembers();
   if (fChi2Mem) delete[] fChi2Mem;
   fChi2Mem = new real[nMem]();
 
   // Calculate chi^2 and resort members after each set
   for (auto exp : exps)
   {
-    FastAddChi2(pdf,&exp,fChi2Mem);
+    FastAddChi2(proton, deuteron, &exp, fChi2Mem);
     // Check for anomalous chi^2 values
-    for (int j=0; j< pdf->GetMembers(); j++)
+    for (int j=0; j< deuteron->GetMembers(); j++)
       if (fChi2Mem[j] >= 1E20 || std::isnan(fChi2Mem[j]) || std::isinf(fChi2Mem[j]))
         std::cerr << "Anomalous chi^2: "<< fChi2Mem[j] <<std::endl;
   }
@@ -191,19 +191,19 @@ void CMAESMinimizer::ComputeEigensystem()
     gsl_vector_free(E);
 }
 
-void CMAESMinimizer::Iterate(DeuteronSet* pdf, vector<Experiment> const& exps)
+void CMAESMinimizer::Iterate(LHAPDFSet* proton, DeuteronSet* deuteron, vector<Experiment> const& exps)
 {
   // First setup the required matrices
   if (fIte++ % fCMAES.eigenInterval == 0 )
     ComputeEigensystem();
   gsl_vector* m  = gsl_vector_calloc(fCMAES.n);
-  gsl_vector_memcpy(m, pdf->GetBestFit());
+  gsl_vector_memcpy(m, deuteron->GetBestFit());
 
   // Setup and mutate PDF members
-  const vector<gsl_vector*> yvals = Mutation(pdf, m);
+  const vector<gsl_vector*> yvals = Mutation(deuteron, m);
 
   // Compute ERF and rank members
-  ComputeErf(pdf, exps);
+  ComputeErf(proton, deuteron, exps);
   vector<double> erf_srt(fChi2Mem, fChi2Mem + fCMAES.lambda);
   vector<size_t> irank_map(fCMAES.lambda,0); // Weight-ordered map to members (index is i)
   std::sort(erf_srt.begin(), erf_srt.end());
@@ -211,7 +211,7 @@ void CMAESMinimizer::Iterate(DeuteronSet* pdf, vector<Experiment> const& exps)
     irank_map[std::distance(erf_srt.begin(), std::find(erf_srt.begin(), erf_srt.end(), fChi2Mem[i]))] = i;
 
   // Compute weighted shift and set new mean
-  gsl_vector* yavg = Recombination(pdf, irank_map, yvals);
+  gsl_vector* yavg = Recombination(deuteron, irank_map, yvals);
 
   // ********************************** Adaptation  ****************************************
   CSA(yavg); CMA(fIte + 1, irank_map, yvals, yavg );

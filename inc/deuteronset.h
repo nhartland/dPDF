@@ -10,14 +10,14 @@
 using NNPDF::real;
 using std::vector;
 
-  static const std::vector<int> activeFlavours = {1,2}; // 10
+  static const std::vector<int> activeFlavours = {1,2,3,5,10}; // 10
   static const int n_activeFlavours = static_cast<int>(activeFlavours.size());
   class DeuteronSet : public NNPDF::PDFSet
   {
   public:
     DeuteronSet(libconfig::Config const& s):
     PDFSet(s.lookup("fit.name"), s.lookup("fit.lambda"), ER_NONE),
-    fParametrisation({2,20, n_activeFlavours}),
+    fParametrisation({2,40, n_activeFlavours}),
     fGSLWork( gsl_integration_workspace_alloc (10000) ),
     fBestFit(gsl_vector_calloc( fParametrisation.GetNParameters() )),
     nn_1(new double[fMembers*n_activeFlavours]),

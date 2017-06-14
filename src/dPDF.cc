@@ -27,6 +27,9 @@ void gsl_handler (const char * msg, const char * source, int line, int)
 
 int main(int argc, char* argv[]) {
 
+  // Set LHAPDF verbosity
+  LHAPDF::setVerbosity(0);
+
   // Set GSL error handler
   gsl_set_error_handler (&gsl_handler);
 
@@ -74,18 +77,23 @@ int main(int argc, char* argv[]) {
   cout              << "                     Fit: "<<fitname<<"     Replica: "<<replica<<"   "<<             endl;
   cout << FG_YELLOW << "---------------------------------------------------------------------"<<FG_DEFAULT <<endl;
 
-  // Initialise proton parametrisation
-  LHAPDFSet pPDF(dPDFconfig.lookup("fit.proton"), replica + 1);
-
   // Initialise prototype parametrisation
   DeuteronSet dpdf(dPDFconfig);
   const int lambda = dpdf.GetMembers();
   const int nparam = dpdf.GetNParameters();
+
+  // Initialise proton parametrisation
+  LHAPDFSet pPDF(dPDFconfig.lookup("fit.proton"), replica + 1, lambda);
+
+  // Initialise minimiser
   CMAESMinimizer min(nparam, lambda, dPDFconfig.lookup("fit.sigma"));
   min.NormVect(dpdf.GetBestFit());
-
-  for (int i=0; i< 1000; i++)
+  const int ngen = dPDFconfig.lookup("fit.ngen");
+  for (int i=0; i< ngen; i++)
+  {
+    std::cout << "Iteration: "<<i <<" / " <<ngen <<std::endl;
     min.Iterate(&pPDF, &dpdf, trainExp);
+  }
 
   NNPDF::real* chi2 = new NNPDF::real[lambda]();
   for (auto exp : trainExp)

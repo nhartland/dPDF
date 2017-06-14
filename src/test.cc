@@ -1,4 +1,4 @@
-// n.p.hartland@ed.ac.uk  03/12
+// Multi-beam test
 
 #include "LHAPDF/LHAPDF.h"
 
@@ -22,6 +22,14 @@
 
 using namespace Colour;
 using namespace std;
+
+/*
+  This code tests the proton-deuteron rotation in APFEL and in
+  IsoProtonSet. We compute the predictions for \sigma_pd by
+    a) Using the \sigma_pd FK table from APFEL
+    b) Using a \sigma_pp FK table and setting T3=V3=0
+  Under the assumptions used in NNPDF these should be the same.
+*/
 
 int main(int argc, char* argv[]) {
   NNPDF::RandomGenerator::InitRNG(0,0);

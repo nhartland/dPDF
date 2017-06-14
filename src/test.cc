@@ -25,21 +25,7 @@ using namespace std;
 int main(int argc, char* argv[]) {
   NNPDF::RandomGenerator::InitRNG(0,0);
 
-
-  NostateMLP network({2,3,5});
-  gsl_vector* parameters = gsl_vector_calloc( network.GetNParameters() );
-  CMAESMinimizer min(network.GetNParameters(), 1, 0.1);
-  min.NormVect(parameters);
-  for (int i=0; i<network.GetNParameters(); i++) std::cout << gsl_vector_get(parameters, i) <<std::endl;
-
-
-  NNPDF::real* ovals = new NNPDF::real[5]();
-  network.Compute(parameters, 0.1, ovals);
-  for (int i=0; i<5; i++) std::cout << i <<"  "<<ovals[i]<<std::endl;
-  // std::cout << std::endl;
-  // min.NormVect(parameters);
-  // network.Compute(parameters, xvals, ovals);
-  // for (int i=0; i<5; i++) std::cout << i <<"  "<<ovals[i]<<std::endl;
+  NNPDF::LHAPDFSet protonset("NNPDF30_nlo_as_0118", NNPDF::PDFSet::ER_MC);
 
   exit(0);
 }

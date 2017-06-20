@@ -15,7 +15,6 @@ using NNPDF::ThPredictions;
 
 enum process_type {F2, F2R, DYR};
 const std::map<std::string, process_type> process_map = {{"BCDMSD", F2}, {"SLACD", F2}, {"NMCPD", F2R}, {"DYE886R", DYR}};
-const double x_max = 2.0;
 void ComputePredictions(const PDFSet* proton, const PDFSet* deuteron, const FKSet* fkset, real * theory)
 {
   auto iproc = process_map.find(fkset->GetDataName());
@@ -37,7 +36,7 @@ void ComputePredictions(const PDFSet* proton, const PDFSet* deuteron, const FKSe
       break; }
     case F2: {
       ThPredictions::Convolute(deuteron, fkset->GetFK(0),theory);
-      for (size_t i=0; i<nPDF*nDAT; i++) theory[i] /= x_max;
+      for (size_t i=0; i<nPDF*nDAT; i++) theory[i] /= 2.0;
       break; }
 
     case F2R: {
@@ -45,7 +44,7 @@ void ComputePredictions(const PDFSet* proton, const PDFSet* deuteron, const FKSe
       const ThPredictions F2p(proton,   fkset->GetFK(1));
       for (size_t idat=0; idat<nDAT; idat++)
       {
-        const NNPDF::real norm = x_max*F2p.GetObsCV(idat);
+        const NNPDF::real norm = 2.0*F2p.GetObsCV(idat);
         for (size_t imem=0; imem<nPDF; imem++)
           theory[idat*nPDF + imem] /= norm;
       }

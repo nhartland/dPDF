@@ -25,6 +25,17 @@ using namespace std;
 void gsl_handler (const char * msg, const char * source, int line, int)
 { std::cerr << "gsl: " << source<<":"<<line<<": " <<msg <<std::endl;}
 
+double ComputeBestChi2(DeuteronSet& dpdf, LHAPDFSet const& pPDF, vector<Experiment> const& exps)
+{
+  dpdf.UseBestFit();
+  NNPDF::real* chi2 = new NNPDF::real[dpdf.GetMembers()]();
+  for (auto exp : exps)
+    FastAddChi2(&pPDF, &dpdf, &exp, chi2);
+  const double val = chi2[0];
+  delete[] chi2;
+  return val;
+}
+
 int main(int argc, char* argv[]) {
 
   // Set LHAPDF verbosity
@@ -95,12 +106,10 @@ int main(int argc, char* argv[]) {
     min.Iterate(&pPDF, &dpdf, trainExp);
   }
 
-  NNPDF::real* chi2 = new NNPDF::real[lambda]();
-  for (auto exp : trainExp)
-    FastAddChi2(&pPDF, &dpdf, &exp, chi2);
-  for (int i=0; i<lambda; i++)
-    std::cout << i <<"  "<<chi2[i]/nData<<std::endl;
-  delete[] chi2;
+
+  // Compute final chi2
+  const double bfchi2 = ComputeBestChi2(dpdf, pPDF, trainExp)/nData;
+  std::cout << "Final chi2: " << bfchi2 <<std::endl;
 
   std::stringstream filename;
   filename << "res/replica_"<<replica<<".dat";

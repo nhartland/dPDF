@@ -12,8 +12,8 @@ DEV = appl_optgrid
 	
 all: $(MAIN)
 
-dPDF: dPDF.o filter.o cmaes.o ns_network.o fastaddchi2.o proton.o
-test: test.o filter.o cmaes.o ns_network.o fastaddchi2.o proton.o
+dPDF: dPDF.o filter.o cmaes.o ns_network.o fastaddchi2.o
+test: test.o filter.o cmaes.o ns_network.o fastaddchi2.o
 clean:
 	-$(RM) -f $(MAIN)
 	-$(RM) *.o

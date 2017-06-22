@@ -25,7 +25,21 @@ using namespace std;
 void gsl_handler (const char * msg, const char * source, int line, int)
 { std::cerr << "gsl: " << source<<":"<<line<<": " <<msg <<std::endl;}
 
+double ComputeBestChi2(DeuteronSet& dpdf, LHAPDFSet const& pPDF, vector<Experiment> const& exps)
+{
+  dpdf.UseBestFit();
+  NNPDF::real* chi2 = new NNPDF::real[dpdf.GetMembers()]();
+  for (auto exp : exps)
+    FastAddChi2(&pPDF, &dpdf, &exp, chi2);
+  const double val = chi2[0];
+  delete[] chi2;
+  return val;
+}
+
 int main(int argc, char* argv[]) {
+
+  // Set LHAPDF verbosity
+  LHAPDF::setVerbosity(0);
 
   // Set GSL error handler
   gsl_set_error_handler (&gsl_handler);
@@ -78,18 +92,24 @@ int main(int argc, char* argv[]) {
   DeuteronSet dpdf(dPDFconfig);
   const int lambda = dpdf.GetMembers();
   const int nparam = dpdf.GetNParameters();
+
+  // Initialise proton parametrisation
+  LHAPDFSet pPDF(dPDFconfig.lookup("fit.proton"), replica + 1, lambda);
+
+  // Initialise minimiser
   CMAESMinimizer min(nparam, lambda, dPDFconfig.lookup("fit.sigma"));
   min.NormVect(dpdf.GetBestFit());
+  const int ngen = dPDFconfig.lookup("fit.ngen");
+  for (int i=0; i< ngen; i++)
+  {
+    std::cout << "Iteration: "<<i <<" / " <<ngen <<std::endl;
+    min.Iterate(&pPDF, &dpdf, trainExp);
+  }
 
-  for (int i=0; i< 1000; i++)
-    min.Iterate(&dpdf, trainExp);
 
-  NNPDF::real* chi2 = new NNPDF::real[lambda]();
-  for (auto exp : trainExp)
-    FastAddChi2(&dpdf, &exp, chi2);
-  for (int i=0; i<lambda; i++)
-    std::cout << i <<"  "<<chi2[i]/nData<<std::endl;
-  delete[] chi2;
+  // Compute final chi2
+  const double bfchi2 = ComputeBestChi2(dpdf, pPDF, trainExp)/nData;
+  std::cout << "Final chi2: " << bfchi2 <<std::endl;
 
   std::stringstream filename;
   filename << "res/replica_"<<replica<<".dat";
@@ -99,8 +119,8 @@ int main(int argc, char* argv[]) {
   std::stringstream protonfilename;
   protonfilename << "prt/replica_"<<replica<<".dat";
   ofstream protonfile; protonfile.open(protonfilename.str());
-  ExportProton(dPDFconfig, protonfile);
-
+  ExportProton(pPDF, dPDFconfig, protonfile);
+  protonfile.close();
 
   exit(0);
 }

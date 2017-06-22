@@ -23,10 +23,9 @@ using std::vector;
 #include <gsl/gsl_blas.h>
 
 #include <NNPDF/experiments.h>
-#include <NNPDF/positivity.h>
+#include <NNPDF/lhapdfset.h>
 using NNPDF::Experiment;
-using NNPDF::PositivitySet;
-
+using NNPDF::LHAPDFSet;
 
 // *************************************************************************************
 
@@ -59,7 +58,7 @@ public:
   CMAESMinimizer(int const& n, int const& lambda, double const& sigma);
   ~CMAESMinimizer();
 
-  void Iterate(DeuteronSet*, vector<Experiment> const&);
+  void Iterate(LHAPDFSet*, DeuteronSet*, vector<Experiment> const&);
   void NormVect(gsl_vector*) const; //!< Normally distributed random vector
 
 private:
@@ -70,7 +69,7 @@ private:
   void CMA(int const& NIte, vector<size_t> const& rank, std::vector<gsl_vector*> const& yvals, gsl_vector const* yavg);
 
   void ComputeEigensystem();
-  void ComputeErf(DeuteronSet*, vector<Experiment> const&);
+  void ComputeErf(LHAPDFSet*, DeuteronSet*, vector<Experiment> const&);
   
 protected:
   const CMAESParam fCMAES;

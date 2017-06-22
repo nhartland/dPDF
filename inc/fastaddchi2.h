@@ -13,8 +13,9 @@ using NNPDF::PDFSet;
 using NNPDF::DataSet;
 using NNPDF::Experiment;
 using NNPDF::real;
+using NNPDF::FKSet;
 
 // Fast methods for the computation of chi2s.
-void Convolute(const PDFSet* pdf, const Experiment*, real *);
-void FastAddChi2(const PDFSet*, const DataSet*, real* chi2);
-void FastAddChi2(const PDFSet*, const Experiment*, real* chi2);
+void FastAddChi2(const PDFSet*, const PDFSet*, const Experiment*, real* chi2);
+void Convolute(const PDFSet*, const PDFSet*, const Experiment*, real *);
+void ComputePredictions(const PDFSet*, const PDFSet*, const FKSet*, real*);

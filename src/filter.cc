@@ -2,7 +2,6 @@
 
 #include "filter.h"
 #include "colour.h"
-#include "proton.h"
 
 #include <NNPDF/fastkernel.h>
 #include <NNPDF/pdfset.h>
@@ -245,9 +244,6 @@ void InitData(libconfig::Config const& settings, std::vector<NNPDF::Experiment>&
 /* Function to return a dataset */ 
 NNPDF::DataSet LoadDataSet(libconfig::Setting const& set, libconfig::Config const& settings)
 {
-    // Generate any required C-factor normalisations
-    GenerateNormalisations(set, settings);
- 	
     std::string setname;
     set.lookupValue("name", setname);
 
@@ -262,16 +258,8 @@ NNPDF::DataSet LoadDataSet(libconfig::Setting const& set, libconfig::Config cons
     // Read commondata file
     NNPDF::CommonData cd = NNPDF::CommonData::ReadFile(datname.str(), sysname.str());
 
-    // Read normalisation C-factors
+    // Read C-factors
     std::vector<std::string> cfactors;
-    if (set.exists("normby_proton"))
-    {
-      const int replica = settings.lookup("fit.replica");
-      const char *setname   = set["name"];
-      std::stringstream cfac_path;
-      cfac_path << "res/norm/CF_"<< setname << "_"<<replica<<".dat";
-      cfactors.push_back(cfac_path.str());
-    }
 
     // Read FK table operator
     std::string fkopstring = "NULL";
@@ -298,7 +286,6 @@ NNPDF::DataSet FilterData(NNPDF::DataSet const& set, libconfig::Config const& se
     std::vector<int> datamask;
     for (int i=0; i<set.GetNData(); i++)
         if (passKinCuts(settings,set,i)) datamask.push_back(i);
-
     return NNPDF::DataSet(set,datamask);
 }
 

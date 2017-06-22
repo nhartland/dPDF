@@ -10,8 +10,8 @@ import glob
 
 normalise = True
 colours = ['r', 'b', 'g']
-pdfnames = ['Singlet', 'Gluon', 'T8']
-mxpdf = 2
+pdfnames = ['Singlet', 'Gluon', 'V', 'V8', 'T8']
+mxpdf = 5
 
 plotReplicas = True
 
@@ -66,7 +66,7 @@ for pdfidx in xrange(0,mxpdf):
 
     irep = 0
     nreps = len(os.listdir(indir))
-    interval = 1#math.floor((nreps-0.68*nreps)/2)
+    interval = math.floor((nreps-0.68*nreps)/2)
 
     print nreps, " Replicas found and processing"
     print interval, " replicas excluded on either side for 68cl"

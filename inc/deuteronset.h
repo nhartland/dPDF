@@ -12,9 +12,8 @@ using std::vector;
 
   // static const std::vector<int> activeFlavours = {1,2,3,5,10};
   // static const std::vector<int> activeFlavours = {1,2,3};
-  static const std::vector<int> activeFlavours = {1,2,3};
+  static const std::vector<int> activeFlavours = {1,2};
   static const int n_activeFlavours = static_cast<int>(activeFlavours.size());
-  static const double x_max = 2.0;
   class DeuteronSet : public NNPDF::PDFSet
   {
   public:
@@ -45,15 +44,15 @@ using std::vector;
       {
         // Compute large-x preprocessing
         std::array<NNPDF::real, 14> pdf;
-        GetPDF(x_max,1,n, &pdf[0]); // Evaluate NN(x_max)
+        GetPDF(2.0,1,n, &pdf[0]); // Evaluate NN(x_max)
         for (int ifl=0; ifl<n_activeFlavours; ifl++)
           nn_1[n_activeFlavours*n + ifl] = pdf[activeFlavours[ifl]];
 
         // Compute MSR normalisation
         bool gslerror = false;
-        const double xsng = IntegratePDF(n,1,1,PDFSet::XFX,gslerror,fGSLWork, 0, x_max);
-        const double xglu = IntegratePDF(n,2,1,PDFSet::XFX,gslerror,fGSLWork, 0, x_max);
-        nn_norm[n_activeFlavours*n +1] = (x_max-xsng)/xglu;
+        const double xsng = IntegratePDF(n,1,1,PDFSet::XFX,gslerror,fGSLWork, 0, 2);
+        const double xglu = IntegratePDF(n,2,1,PDFSet::XFX,gslerror,fGSLWork, 0, 2);
+        nn_norm[n_activeFlavours*n +1] = (1.0-xsng)/xglu;
       }
     };
 
@@ -65,7 +64,7 @@ using std::vector;
     virtual void GetPDF(NNPDF::real const& x, NNPDF::real const& Q2, int const& n, NNPDF::real* pdf) const
     {
       NNPDF::real* fitbasis = new NNPDF::real[n_activeFlavours];
-      fParametrisation.Compute(fParameters[n], x, fitbasis);
+      fParametrisation.Compute(fParameters[n], x/2.0, fitbasis);
       for (int i=0; i<14; i++) pdf[i] = 0;
       for (int i =0; i<n_activeFlavours; i++ )
         // pdf[activeFlavours[i]] = nn_norm[n_activeFlavours*n + i]*std::abs(std::abs(fitbasis[i]) - nn_1[n_activeFlavours*n + i]);
@@ -86,7 +85,7 @@ using std::vector;
     void ExportBestFit(std::ostream& os)
     {
       const double ymin = XGrid::appl_fy(1E-5); 
-      const double ymax = XGrid::appl_fy(x_max);
+      const double ymax = XGrid::appl_fy(2.0);
       const int nx = 200;
  
       // Copy best-fit to fParameters[0]

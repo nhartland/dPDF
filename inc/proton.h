@@ -33,13 +33,13 @@ void ExportProton(NNPDF::LHAPDFSet const& proton, libconfig::Config const& setti
 {
   const double Q0 = settings.lookup("qcd.Q0");
   const double ymin = XGrid::appl_fy(1E-5); 
-  const double ymax = XGrid::appl_fy(1.0);
+  const double ymax = XGrid::appl_fy(2.0);
   const int nx = 200;
 
   for (int i=0; i<nx; i++)
   {
     const NNPDF::real x_d = XGrid::appl_fx(ymin + ((ymax-ymin)/((double) nx ))*i);
-    const NNPDF::real x_p = (x_d > 0.5) ? 1:2.0*x_d;
+    const NNPDF::real x_p = (x_d > 1) ? 1:x_d;
     std::array<NNPDF::real, 14> pdf; 
     proton.GetPDF(x_p, Q0*Q0 ,0, &pdf[0]);
     os << x_d;

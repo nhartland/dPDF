@@ -136,7 +136,7 @@ for pdfidx in xrange(0,mxpdf):
     icol=icol+1
 
   # set limits
-  ax.set_xlim([0.1, 1])
+  ax.set_xlim([0.1, 2])
   lax.set_xlim([1E-5,0.1])
 
   # set limits

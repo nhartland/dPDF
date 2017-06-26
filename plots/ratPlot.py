@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 from matplotlib import gridspec
 from matplotlib.ticker import MaxNLocator
 
-from operator import add, sub
+from operator import add, sub, div
 import sys, os, math
 import numpy as np
 import glob
@@ -11,9 +11,9 @@ import glob
 normalise = True
 colours = ['r', 'b', 'g']
 pdfnames = ['Singlet', 'Gluon', 'V', 'V8', 'T8']
-mxpdf = 3
+mxpdf = 2
 
-plotReplicas = True
+plotReplicas = False
 
 # Choice of PDF
 for pdfidx in xrange(0,mxpdf):
@@ -49,6 +49,8 @@ for pdfidx in xrange(0,mxpdf):
   lax.set_ylabel("r" + pdfnames[pdfidx])
   ax.set_xlabel("x")
   lax.set_xlabel("x")
+
+  ratio_val = []
 
   for idat in xrange(1,len(sys.argv)):
 
@@ -112,6 +114,17 @@ for pdfidx in xrange(0,mxpdf):
     CVup = map(add, yCV, yER)
     CVdn = map(sub, yCV, yER)
 
+    if idat == 1:
+      ratio_val = list(yCV)
+
+    sel_op = sub
+    yCV = map(sel_op, yCV, ratio_val)
+    yER = map(sel_op, yER, ratio_val)
+    y84 = map(sel_op, y84, ratio_val)
+    y16 = map(sel_op, y16, ratio_val)
+    CVup = map(sel_op, CVup, ratio_val)
+    CVdn = map(sel_op, CVdn, ratio_val)
+
 
     # Central values
     ax.plot(xvals,yCV, color = colours[icol], alpha=0.8, label = basename)
@@ -140,14 +153,14 @@ for pdfidx in xrange(0,mxpdf):
   lax.set_xlim([1E-5,0.1])
 
   # set limits
-  ax.set_ylim([-0.5, 3])
-  lax.set_ylim([-0.5,3])
+  ax.set_ylim([-1, 1])
+  lax.set_ylim([-1,1])
 
   # Legend
   legend = lax.legend(fontsize=10, loc='best')
   legend.get_frame().set_alpha(0.7)
 
-  fig.savefig('pdfcomp'+pdfnames[pdfidx]+'.pdf')
+  fig.savefig('pdfrat'+pdfnames[pdfidx]+'.pdf')
 
 
 

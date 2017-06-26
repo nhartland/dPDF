@@ -28,12 +28,16 @@ void gsl_handler (const char * msg, const char * source, int line, int)
 double ComputeBestChi2(DeuteronSet& dpdf, LHAPDFSet const& pPDF, vector<Experiment> const& exps)
 {
   dpdf.UseBestFit();
-  NNPDF::real* chi2 = new NNPDF::real[dpdf.GetMembers()]();
+  double global_chi2 = 0;
   for (auto exp : exps)
+  {
+    NNPDF::real* chi2 = new NNPDF::real[dpdf.GetMembers()]();
     FastAddChi2(&pPDF, &dpdf, &exp, chi2);
-  const double val = chi2[0];
-  delete[] chi2;
-  return val;
+    global_chi2 += chi2[0];
+    std::cout << "Chi^2 for set " << exp.GetExpName() <<"  "<<chi2[0]/((double)exp.GetNData())<<std::endl;
+    delete[] chi2;
+  }
+  return global_chi2;
 }
 
 int main(int argc, char* argv[]) {

@@ -71,8 +71,6 @@ void FastAddChi2(const PDFSet* proton, const PDFSet* deuteron, const Experiment*
   // Perform convolution and chi^2 calculation
   Convolute(proton, deuteron, exp, theory);
   NNPDF::ComputeChi2(exp,nMem,theory,chi2);
-  const double avg = NNPDF::ComputeAVG(nMem, chi2);
-  std::cout << "Average chi2 for " << exp->GetExpName() <<": " << avg/exp->GetNData()<<std::endl;
 
   delete[] theory;
 }

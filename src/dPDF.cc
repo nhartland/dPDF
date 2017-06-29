@@ -83,9 +83,13 @@ int main(int argc, char* argv[]) {
   std::vector<NNPDF::Experiment> validExp;
   InitData(dPDFconfig, trainExp, validExp);
 
-  double nData = 0;
+  double nData_trn = 0;
   for (size_t i=0; i<trainExp.size(); i++)
-    nData += trainExp[i].GetNData();
+    nData_trn += trainExp[i].GetNData();
+
+  double nData_val = 0;
+  for (size_t i=0; i<validExp.size(); i++)
+    nData_val += validExp[i].GetNData();
 
   cout << FG_YELLOW << "---------------------------------------------------------------------"<<FG_DEFAULT <<endl;
   cout              << "                            deuteron fitter                            "<<             endl;
@@ -108,11 +112,21 @@ int main(int argc, char* argv[]) {
   {
     std::cout << "Iteration: "<<i <<" / " <<ngen <<std::endl;
     min.Iterate(&pPDF, &dpdf, trainExp);
+
+    if (i % 20 == 0 )
+    {
+      // Compute final chi2
+      const double trnchi2 = ComputeBestChi2(dpdf, pPDF, trainExp)/nData_trn;
+      std::cout << "Training chi2: " << trnchi2 <<std::endl;  
+
+      const double valchi2 = ComputeBestChi2(dpdf, pPDF, validExp)/nData_val;
+      std::cout << "Validation chi2: " << valchi2 <<std::endl;  
+    } 
   }
 
 
   // Compute final chi2
-  const double bfchi2 = ComputeBestChi2(dpdf, pPDF, trainExp)/nData;
+  const double bfchi2 = ComputeBestChi2(dpdf, pPDF, trainExp)/nData_trn;
   std::cout << "Final chi2: " << bfchi2 <<std::endl;
 
   std::stringstream filename;

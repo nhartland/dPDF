@@ -48,11 +48,16 @@ using std::vector;
         for (int ifl=0; ifl<n_activeFlavours; ifl++)
           nn_2[n_activeFlavours*n + ifl] = pdf[activeFlavours[ifl]];
 
-        // Compute MSR normalisation
+        GetPDF(0,1,n, &pdf[0]); // Evaluate NN(0)
+
+        // Compute sum rules
         bool gslerror = false;
+        const double pval = IntegratePDF(n,3,1,PDFSet::FX,gslerror,fGSLWork, 0.0, 2.0);
+        if (gslerror) std::cout << "Valence alpha: " << fabs(0.5+0.1*gsl_vector_get(fParameters[n], fParametrisation.GetNParameters()-1)) <<std::endl;
         const double xsng = IntegratePDF(n,1,1,PDFSet::XFX,gslerror,fGSLWork, 0.0, 2.0);
         const double xglu = IntegratePDF(n,2,1,PDFSet::XFX,gslerror,fGSLWork, 0.0, 2.0);
-        nn_norm[n_activeFlavours*n +1] = (2.0-xsng)/xglu;
+        nn_norm[n_activeFlavours*n + 0] = (2.0-xsng)/xglu;
+        nn_norm[n_activeFlavours*n + 2] = 6.0/pval;
       }
     };
 
@@ -65,11 +70,14 @@ using std::vector;
     {
       NNPDF::real* fitbasis = new NNPDF::real[n_activeFlavours];
       fParametrisation.Compute(fParameters[n], x, fitbasis);
+
       for (int i=0; i<14; i++) pdf[i] = 0;
       for (int i =0; i<n_activeFlavours; i++ )
         // pdf[activeFlavours[i]] = nn_norm[n_activeFlavours*n + i]*std::abs(std::abs(fitbasis[i]) - nn_2[n_activeFlavours*n + i]);
         pdf[activeFlavours[i]] = nn_norm[n_activeFlavours*n + i]*(fitbasis[i] - nn_2[n_activeFlavours*n + i]);
-
+     
+      // Valence preprocessing
+      pdf[3] *= pow(x/2.0, fabs(0.5+0.1*gsl_vector_get(fParameters[n], fParametrisation.GetNParameters()-1))); // Valence low-x sum rule
       // pdf[10] = pdf[1]; // T8 = Singlet
       pdf[5] = pdf[3]; // V8 = Valence
       delete[] fitbasis; 
@@ -100,6 +108,13 @@ using std::vector;
           os << "  "<< pdf[activeFlavours[i]];
         os <<std::endl;
       }
+    }
+
+    void ExportParameters(std::ostream& os)
+    {
+      os << std::scientific << std::setprecision(20);
+      for (int i=0; i<fParametrisation.GetNParameters(); i++)
+        os << gsl_vector_get(fBestFit, i) <<std::endl;
     }
 
   private:

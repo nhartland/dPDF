@@ -21,7 +21,7 @@ int get_nparam(std::vector<int> const& arch)
   for (int i=1; i<arch.size(); i++)
     nparam += arch[i]*arch[i-1] + arch[i];
   nparam -= arch.back(); // Remove last layer bias
-  return nparam;
+  return nparam+1; // + 1 due to valence low-x preprocessing
 }
 
 NostateMLP::NostateMLP(std::vector<int> const& arch):

@@ -28,11 +28,8 @@ void ComputePredictions(const PDFSet* proton, const PDFSet* deuteron, const FKSe
       ThPredictions::Convolute( proton, deuteron, fkset->GetFK(0), theory);
       const ThPredictions SigPP(proton, proton,   fkset->GetFK(0));
       for (size_t idat=0; idat<nDAT; idat++)
-      {
-        const NNPDF::real norm = 2.0*SigPP.GetObsCV(idat);
         for (size_t imem=0; imem<nPDF; imem++)
-          theory[idat*nPDF + imem] /= norm;
-      }
+          theory[idat*nPDF + imem] /= 2.0*SigPP.GetObs()[idat*nPDF + imem];
       break; }
     case F2: {
       ThPredictions::Convolute(deuteron, fkset->GetFK(0),theory);
@@ -43,11 +40,8 @@ void ComputePredictions(const PDFSet* proton, const PDFSet* deuteron, const FKSe
       ThPredictions::Convolute(deuteron, fkset->GetFK(0),theory);
       const ThPredictions F2p(proton,   fkset->GetFK(1));
       for (size_t idat=0; idat<nDAT; idat++)
-      {
-        const NNPDF::real norm = 2.0*F2p.GetObsCV(idat);
         for (size_t imem=0; imem<nPDF; imem++)
-          theory[idat*nPDF + imem] /= norm;
-      }
+          theory[idat*nPDF + imem] /= 2.0*F2p.GetObs()[idat*nPDF+imem];
       break; }
   }
 }

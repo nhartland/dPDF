@@ -1,1 +1,1 @@
-./dPDF ./config/fit_config.ini $1
+./dPDF ./config/dye886.ini $1

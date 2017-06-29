@@ -10,8 +10,8 @@ import glob
 
 normalise = True
 colours = ['r', 'b', 'g']
-pdfnames = ['Singlet', 'Gluon', 'V', 'V8', 'T8']
-mxpdf = 3
+pdfnames = ['Singlet', 'Gluon', 'V', 'T8']
+mxpdf = 4
 
 plotReplicas = True
 

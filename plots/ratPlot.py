@@ -10,8 +10,8 @@ import glob
 
 normalise = True
 colours = ['r', 'b', 'g']
-pdfnames = ['Singlet', 'Gluon', 'V', 'V8', 'T8']
-mxpdf = 2
+pdfnames = ['Singlet', 'Gluon', 'V', 'T8', 'T8']
+mxpdf = 4
 
 plotReplicas = False
 
@@ -149,12 +149,12 @@ for pdfidx in xrange(0,mxpdf):
     icol=icol+1
 
   # set limits
-  ax.set_xlim([0.1, 1])
+  ax.set_xlim([0.1, 2])
   lax.set_xlim([1E-5,0.1])
 
   # set limits
-  ax.set_ylim([-1, 1])
-  lax.set_ylim([-1,1])
+  ax.set_ylim([-3, 3])
+  lax.set_ylim([-3,3])
 
   # Legend
   legend = lax.legend(fontsize=10, loc='best')

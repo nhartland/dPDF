@@ -129,13 +129,20 @@ int main(int argc, char* argv[]) {
   const double bfchi2 = ComputeBestChi2(dpdf, pPDF, trainExp)/nData_trn;
   std::cout << "Final chi2: " << bfchi2 <<std::endl;
 
+  const std::string root = "./";
+
   std::stringstream filename;
-  filename << "res/replica_"<<replica<<".dat";
+  filename << root<< "res/replica_"<<replica<<".dat";
   ofstream outfile; outfile.open(filename.str());
   dpdf.ExportBestFit(outfile);
 
+  std::stringstream parfilename;
+  parfilename << root<< "par/parameters_"<<replica<<".dat";
+  ofstream parfile; parfile.open(parfilename.str());
+  dpdf.ExportPars(parfile);
+
   std::stringstream protonfilename;
-  protonfilename << "prt/replica_"<<replica<<".dat";
+  protonfilename << root<< "prt/replica_"<<replica<<".dat";
   ofstream protonfile; protonfile.open(protonfilename.str());
   ExportProton(pPDF, dPDFconfig, protonfile);
   protonfile.close();

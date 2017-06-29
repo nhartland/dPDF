@@ -110,7 +110,7 @@ using std::vector;
       }
     }
 
-    void ExportParameters(std::ostream& os)
+    void ExportPars(std::ostream& os)
     {
       os << std::scientific << std::setprecision(20);
       for (int i=0; i<fParametrisation.GetNParameters(); i++)

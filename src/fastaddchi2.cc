@@ -41,7 +41,7 @@ void ComputePredictions(const PDFSet* proton, const PDFSet* deuteron, const FKSe
       const ThPredictions F2p(proton,   fkset->GetFK(1));
       for (size_t idat=0; idat<nDAT; idat++)
         for (size_t imem=0; imem<nPDF; imem++)
-          theory[idat*nPDF + imem] /= 2.0*F2p.GetObs()[idat*nPDF+imem];
+          theory[idat*nPDF + imem] /= 2.0*F2p.GetObs()[idat*nPDF + imem];
       break; }
   }
 }

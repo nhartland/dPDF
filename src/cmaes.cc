@@ -27,21 +27,22 @@ void CMAESMinimizer::ComputeErf(LHAPDFSet* proton, DeuteronSet* deuteron, vector
 {
   // Init PDF
   deuteron->InitPDFSet();
+  std::fill(fChi2Mem, fChi2Mem+fCMAES.lambda, 0);
 
-  // Clear existing chi2 values
-  const int nMem = deuteron->GetMembers();
-  if (fChi2Mem) delete[] fChi2Mem;
-  fChi2Mem = new real[nMem]();
+  if ( deuteron->GetMembers() != fCMAES.lambda )
+  {
+    std::cerr << "Fatal Error: There are not " << fCMAES.lambda << " mutants in the deuteronset" <<std::endl;
+    exit(-1);
+  }
 
   // Calculate chi^2 and resort members after each set
   for (auto exp : exps)
-  {
     FastAddChi2(proton, deuteron, &exp, fChi2Mem);
-    // Check for anomalous chi^2 values
-    for (int j=0; j< deuteron->GetMembers(); j++)
-      if (fChi2Mem[j] >= 1E20 || std::isnan(fChi2Mem[j]) || std::isinf(fChi2Mem[j]))
-        std::cerr << "Anomalous chi^2: "<< fChi2Mem[j] <<std::endl;
-  }
+
+  // Check for anomalous chi^2 values
+  for (int j=0; j< deuteron->GetMembers(); j++)
+    if (fChi2Mem[j] >= 1E20 || std::isnan(fChi2Mem[j]) || std::isinf(fChi2Mem[j]))
+      std::cerr << "Anomalous chi^2: "<< fChi2Mem[j] <<std::endl;
 }
 
 // ************************* CMA-ES MINIMIZER *****************************
@@ -130,6 +131,7 @@ CMAESMinimizer::CMAESMinimizer(int const& n, int const& lambda, double const& si
 fCMAES(n, lambda),
 fIte(0),
 fSigma(sigma),
+fChi2Mem(new real[lambda]()),
 fpsigma(gsl_vector_calloc( n )),
 fpc(    gsl_vector_calloc( n )),
 fC(     gsl_matrix_calloc( n, n )),

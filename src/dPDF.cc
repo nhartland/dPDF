@@ -91,10 +91,12 @@ int main(int argc, char* argv[]) {
   cout << FG_YELLOW << "---------------------------------------------------------------------"<<FG_DEFAULT <<endl;
 
   // Initialise prototype parametrisation
-  DeuteronSet dpdf(dPDFconfig, dPDFconfig.lookup("fit.lambda"));
-  DeuteronSet bpdf(dPDFconfig, 1); // Best-fit PDF
-  const int lambda = dpdf.GetMembers();
-  const int nparam = dpdf.GetNParameters();
+  DeuteronSet deuteron_search_mutants(dPDFconfig, dPDFconfig.lookup("fit.lambda"));
+  DeuteronSet deuteron_search_centre (dPDFconfig, 1); // Centre of search distribution
+  DeuteronSet deuteron_look_back     (dPDFconfig, 1); // Best-fit PDFs
+  const int lambda = deuteron_search_mutants.GetMembers();
+  const int nparam = deuteron_search_mutants.GetNParameters();
+  int ite_look_back = -1; double erf_look_back = std::numeric_limits<double>::infinity();
 
   // Initialise proton parametrisation
   LHAPDFSet pPDF(dPDFconfig.lookup("fit.proton"), replica + 1, lambda);
@@ -102,12 +104,7 @@ int main(int argc, char* argv[]) {
 
   // Initialise minimiser
   CMAESMinimizer min(nparam, lambda, dPDFconfig.lookup("fit.sigma"));
-  min.NormVect(dpdf.GetBestFit());
-
-  // Initialise lookback
-  int LookBack_iteration = 0;
-  double LookBack_erf = std::numeric_limits<double>::infinity();
-  gsl_vector* LookBack_pars =  gsl_vector_calloc( dpdf.GetNParameters() );
+  min.NormVect(deuteron_search_mutants.GetBestFit());
 
   // Error function output
   std::stringstream erf_filename;
@@ -118,42 +115,39 @@ int main(int argc, char* argv[]) {
   for (int i=0; i< ngen; i++)
   {
     std::cout << "Iteration: "<<i <<" / " <<ngen <<std::endl;
-    min.Iterate(&pPDF, &dpdf, trainExp);
+    min.Iterate(&pPDF, &deuteron_search_mutants, trainExp);
 
     // Report chi2
-    gsl_vector_memcpy(bpdf.GetBestFit(), dpdf.GetBestFit());
-    bpdf.UseBestFit();
-    const double trnchi2 = ComputeMemberChi2(&bpPDF, &bpdf, 0, trainExp)/nData_trn;
-    const double valchi2 = ComputeMemberChi2(&bpPDF, &bpdf, 0, validExp)/nData_val;
+    gsl_vector_memcpy(deuteron_search_centre.GetBestFit(), deuteron_search_mutants.GetBestFit());
+    deuteron_search_centre.UseBestFit();
+
+    const double trnchi2 = ComputeMemberChi2(&bpPDF, &deuteron_search_centre, 0, trainExp)/nData_trn;
+    const double valchi2 = ComputeMemberChi2(&bpPDF, &deuteron_search_centre, 0, validExp)/nData_val;
     erf_file << i << "  " <<  trnchi2 << "  "<< valchi2<<std::endl; 
 
-    if (valchi2 < LookBack_erf)
+    if (valchi2 < erf_look_back)
     {
-      LookBack_iteration = i;
-      LookBack_erf = valchi2;
-      gsl_vector_memcpy(LookBack_pars, bpdf.GetBestFit());
+      ite_look_back = i;
+      erf_look_back = valchi2;
+      gsl_vector_memcpy(deuteron_look_back.GetBestFit(), deuteron_search_centre.GetBestFit());
+      deuteron_look_back.UseBestFit();
     }
   }
 
-  // Report chi2
-  gsl_vector_memcpy(bpdf.GetBestFit(), LookBack_pars);
-  gsl_vector_free(LookBack_pars);
-  bpdf.UseBestFit();
-
-  const double trnchi2 = ComputeMemberChi2(&bpPDF, &bpdf, 0, trainExp)/nData_trn;
-  const double valchi2 = ComputeMemberChi2(&bpPDF, &bpdf, 0, validExp)/nData_val;
-  erf_file << LookBack_iteration << "  " <<  trnchi2 << "  "<< valchi2<<std::endl; 
+  const double trnchi2 = ComputeMemberChi2(&bpPDF, &deuteron_look_back, 0, trainExp)/nData_trn;
+  const double valchi2 = ComputeMemberChi2(&bpPDF, &deuteron_look_back, 0, validExp)/nData_val;
+  erf_file << ite_look_back << "  " <<  trnchi2 << "  "<< valchi2<<std::endl; 
   erf_file.close();
 
   std::stringstream filename;
   filename << base_path<< "/pdf/replica_"<<replica<<".dat";
   ofstream outfile; outfile.open(filename.str());
-  bpdf.ExportPDF(0,outfile);
+  deuteron_look_back.ExportPDF(0,outfile);
 
   std::stringstream parfilename;
   parfilename << base_path<< "/par/parameters_"<<replica<<".dat";
   ofstream parfile; parfile.open(parfilename.str());
-  bpdf.ExportPars(0,parfile);
+  deuteron_look_back.ExportPars(0,parfile);
 
   std::stringstream protonfilename;
   protonfilename << base_path<< "/prt/replica_"<<replica<<".dat";

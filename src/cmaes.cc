@@ -190,13 +190,11 @@ void CMAESMinimizer::ComputeEigensystem()
     gsl_vector_free(E);
 }
 
-void CMAESMinimizer::Iterate(LHAPDFSet* proton, DeuteronSet* deuteron, vector<Experiment> const& exps)
+void CMAESMinimizer::Iterate(LHAPDFSet* proton, DeuteronSet* deuteron, gsl_vector* m, vector<Experiment> const& exps)
 {
   // First setup the required matrices
   if (fIte++ % fCMAES.eigenInterval == 0 )
     ComputeEigensystem();
-  gsl_vector* m  = gsl_vector_calloc(fCMAES.n);
-  gsl_vector_memcpy(m, deuteron->GetBestFit());
 
   // Setup and mutate PDF members
   const vector<gsl_vector*> yvals = Mutation(deuteron, m);
@@ -209,14 +207,13 @@ void CMAESMinimizer::Iterate(LHAPDFSet* proton, DeuteronSet* deuteron, vector<Ex
     irank_map[std::distance(erf_srt.begin(), std::find(erf_srt.begin(), erf_srt.end(), erf[i]))] = i;
 
   // Compute weighted shift and set new mean
-  gsl_vector* yavg = Recombination(deuteron, irank_map, yvals);
+  gsl_vector* yavg = Recombination(m, irank_map, yvals);
 
   // ********************************** Adaptation  ****************************************
   CSA(yavg); CMA(fIte + 1, irank_map, yvals, yavg );
 
   for (auto i : yvals ) gsl_vector_free(i);
   gsl_vector_free(yavg);
-  gsl_vector_free(m);
 
 };
 
@@ -238,20 +235,19 @@ std::vector<gsl_vector*> CMAESMinimizer::Mutation(DeuteronSet* pdf, const gsl_ve
   return yvals;
 }
 
-gsl_vector* CMAESMinimizer::Recombination(DeuteronSet* pdf, vector<size_t> const& irank_map, std::vector<gsl_vector*> const& yvals) const
+gsl_vector* CMAESMinimizer::Recombination(gsl_vector* m, vector<size_t> const& irank_map, std::vector<gsl_vector*> const& yvals) const
 {
   // Compute average step
   gsl_vector* yavg = gsl_vector_calloc(fCMAES.n);
   for (int i=0; i<fCMAES.mu; i++)
     gsl_blas_daxpy (fCMAES.wgts[i], yvals[irank_map[i]], yavg);
 
-// Compute new average
   gsl_vector *newm  = gsl_vector_calloc( fCMAES.n );
-  gsl_vector_memcpy(newm, pdf->GetBestFit()); 
+  gsl_vector_memcpy(newm, m); 
   gsl_blas_daxpy (fSigma, yavg, newm);
 
   // Set new mean - this is a bit silly, should just daxpy straight into it
-  gsl_vector_memcpy(pdf->GetBestFit(), newm);
+  gsl_vector_memcpy(m, newm);
   gsl_vector_free(newm);
   return yavg;
 }

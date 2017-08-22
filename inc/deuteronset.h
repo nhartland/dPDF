@@ -21,7 +21,6 @@ using std::vector;
     PDFSet(s.lookup("fit.name"), lambda, ER_NONE),
     fParametrisation({2,30, n_activeFlavours}),
     fGSLWork( gsl_integration_workspace_alloc (10000) ),
-    fBestFit(gsl_vector_calloc( fParametrisation.GetNParameters() )),
     nn_2(new double[fMembers*n_activeFlavours]),
     nn_norm(new double[fMembers*n_activeFlavours])
     {
@@ -64,7 +63,6 @@ using std::vector;
     NostateMLP const& GetParametrisation() const {return fParametrisation;};
     int const& GetNParameters() const {return fParametrisation.GetNParameters();}; 
     gsl_vector* GetParameters( int const& imem ) { return fParameters[imem]; };
-    gsl_vector* GetBestFit()  { return fBestFit; };
 
     virtual void GetPDF(NNPDF::real const& x, NNPDF::real const& Q2, int const& n, NNPDF::real* pdf) const
     {
@@ -112,7 +110,6 @@ using std::vector;
   private:
     NostateMLP fParametrisation;
     gsl_integration_workspace* fGSLWork; 
-    gsl_vector* fBestFit;
     vector<gsl_vector*> fParameters;
     double* nn_2;     // NN(2) for large-x preprocessing
     double* nn_norm;  // Multiplicative normalisation for PDF 

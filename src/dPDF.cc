@@ -104,7 +104,7 @@ int main(int argc, char* argv[]) {
 
   // Initialise minimiser
   CMAESMinimizer min(nparam, lambda, dPDFconfig.lookup("fit.sigma"));
-  min.NormVect(deuteron_search_mutants.GetBestFit());
+  min.NormVect(deuteron_search_centre.GetParameters(0));
 
   // Error function output
   std::stringstream erf_filename;
@@ -115,10 +115,10 @@ int main(int argc, char* argv[]) {
   for (int i=0; i< ngen; i++)
   {
     std::cout << "Iteration: "<<i <<" / " <<ngen <<std::endl;
-    min.Iterate(&pPDF, &deuteron_search_mutants, trainExp);
+    min.Iterate(&pPDF, &deuteron_search_mutants, deuteron_search_centre.GetParameters(0), trainExp);
 
     // Report chi2
-    gsl_vector_memcpy(deuteron_search_centre.GetParameters(0), deuteron_search_mutants.GetBestFit());
+    // gsl_vector_memcpy(deuteron_search_centre.GetParameters(0), deuteron_search_mutants.GetBestFit());
     deuteron_search_centre.InitPDFSet();
 
     const double trnchi2 = ComputeMemberChi2(&bpPDF, &deuteron_search_centre, 0, trainExp)/nData_trn;

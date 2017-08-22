@@ -58,12 +58,12 @@ public:
   CMAESMinimizer(int const& n, int const& lambda, double const& sigma);
   ~CMAESMinimizer();
 
-  void Iterate(LHAPDFSet*, DeuteronSet*, vector<Experiment> const&);
+  void Iterate(LHAPDFSet*, DeuteronSet*, gsl_vector*, vector<Experiment> const&);
   void NormVect(gsl_vector*) const; //!< Normally distributed random vector
 
 private:
   std::vector<gsl_vector*> Mutation(DeuteronSet* pdf, const gsl_vector* m) const;
-  gsl_vector* Recombination(DeuteronSet* pdf, vector<size_t> const& rank, std::vector<gsl_vector*> const& yvals) const;
+  gsl_vector* Recombination(gsl_vector* m, vector<size_t> const& rank, std::vector<gsl_vector*> const& yvals) const;
 
   void CSA(gsl_vector const* yavg);
   void CMA(int const& NIte, vector<size_t> const& rank, std::vector<gsl_vector*> const& yvals, gsl_vector const* yavg);

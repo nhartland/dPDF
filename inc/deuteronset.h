@@ -84,12 +84,6 @@ using std::vector;
     	return;
     };
 
-    void UseBestFit() {
-      for (int i=0; i<fMembers; i++)
-        gsl_vector_memcpy (fParameters[i], fBestFit);
-      InitPDFSet();
-    }
-
     void ExportPDF(int const& imem, std::ostream& os)
     {
       const double ymin = XGrid::appl_fy(1E-5); 

@@ -118,8 +118,8 @@ int main(int argc, char* argv[]) {
     min.Iterate(&pPDF, &deuteron_search_mutants, trainExp);
 
     // Report chi2
-    gsl_vector_memcpy(deuteron_search_centre.GetBestFit(), deuteron_search_mutants.GetBestFit());
-    deuteron_search_centre.UseBestFit();
+    gsl_vector_memcpy(deuteron_search_centre.GetParameters(0), deuteron_search_mutants.GetBestFit());
+    deuteron_search_centre.InitPDFSet();
 
     const double trnchi2 = ComputeMemberChi2(&bpPDF, &deuteron_search_centre, 0, trainExp)/nData_trn;
     const double valchi2 = ComputeMemberChi2(&bpPDF, &deuteron_search_centre, 0, validExp)/nData_val;
@@ -129,8 +129,8 @@ int main(int argc, char* argv[]) {
     {
       ite_look_back = i;
       erf_look_back = valchi2;
-      gsl_vector_memcpy(deuteron_look_back.GetBestFit(), deuteron_search_centre.GetBestFit());
-      deuteron_look_back.UseBestFit();
+      gsl_vector_memcpy(deuteron_look_back.GetParameters(0), deuteron_search_centre.GetParameters(0));
+      deuteron_look_back.InitPDFSet();
     }
   }
 

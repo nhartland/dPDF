@@ -106,7 +106,8 @@ int main(int argc, char* argv[]) {
   cout << FG_YELLOW << "---------------------------------------------------------------------"<<FG_DEFAULT <<endl;
 
   // Initialise prototype parametrisation
-  DeuteronSet dpdf(dPDFconfig);
+  DeuteronSet dpdf(dPDFconfig, dPDFconfig.lookup("fit.lambda"));
+  DeuteronSet bpdf(dPDFconfig, 1); // Best-fit PDF
   const int lambda = dpdf.GetMembers();
   const int nparam = dpdf.GetNParameters();
 
@@ -149,6 +150,8 @@ int main(int argc, char* argv[]) {
   // Report chi2
   gsl_vector_memcpy(dpdf.GetBestFit(), LookBack_pars);
   gsl_vector_free(LookBack_pars);
+  dpdf.UseBestFit();
+
   const double trnchi2 = ComputeBestChi2(dpdf, pPDF, trainExp)/nData_trn;
   const double valchi2 = ComputeBestChi2(dpdf, pPDF, validExp)/nData_val;
   erf_file << LookBack_iteration << "  " <<  trnchi2 << "  "<< valchi2<<std::endl; 
@@ -157,12 +160,12 @@ int main(int argc, char* argv[]) {
   std::stringstream filename;
   filename << base_path<< "/pdf/replica_"<<replica<<".dat";
   ofstream outfile; outfile.open(filename.str());
-  dpdf.ExportBestFit(outfile);
+  dpdf.ExportPDF(0,outfile);
 
   std::stringstream parfilename;
   parfilename << base_path<< "/par/parameters_"<<replica<<".dat";
   ofstream parfile; parfile.open(parfilename.str());
-  dpdf.ExportPars(parfile);
+  dpdf.ExportPars(0,parfile);
 
   std::stringstream protonfilename;
   protonfilename << base_path<< "/prt/replica_"<<replica<<".dat";

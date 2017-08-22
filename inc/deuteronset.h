@@ -17,8 +17,8 @@ using std::vector;
   class DeuteronSet : public NNPDF::PDFSet
   {
   public:
-    DeuteronSet(libconfig::Config const& s):
-    PDFSet(s.lookup("fit.name"), s.lookup("fit.lambda"), ER_NONE),
+    DeuteronSet(libconfig::Config const& s, int const& lambda):
+    PDFSet(s.lookup("fit.name"), lambda, ER_NONE),
     fParametrisation({2,30, n_activeFlavours}),
     fGSLWork( gsl_integration_workspace_alloc (10000) ),
     fBestFit(gsl_vector_calloc( fParametrisation.GetNParameters() )),
@@ -90,19 +90,17 @@ using std::vector;
       InitPDFSet();
     }
 
-    void ExportBestFit(std::ostream& os)
+    void ExportPDF(int const& imem, std::ostream& os)
     {
       const double ymin = XGrid::appl_fy(1E-5); 
       const double ymax = XGrid::appl_fy(2.0);
       const int nx = 200;
  
-      // Copy best-fit to fParameters[0]
-      gsl_vector_memcpy (fParameters[0], fBestFit);
       InitPDFSet(); 
       for (int i=0; i<nx; i++)
       {
         const NNPDF::real x = XGrid::appl_fx(ymin + ((ymax-ymin)/((double) nx - 1))*i);
-        std::array<NNPDF::real, 14> pdf; GetPDF(x,1,0, &pdf[0]);
+        std::array<NNPDF::real, 14> pdf; GetPDF(x,1,imem, &pdf[0]);
         os << x;
         for (int i =0; i<n_activeFlavours; i++ )
           os << "  "<< pdf[activeFlavours[i]];
@@ -110,11 +108,11 @@ using std::vector;
       }
     }
 
-    void ExportPars(std::ostream& os)
+    void ExportPars(int const& imem, std::ostream& os)
     {
       os << std::scientific << std::setprecision(20);
       for (int i=0; i<fParametrisation.GetNParameters(); i++)
-        os << gsl_vector_get(fBestFit, i) <<std::endl;
+        os << gsl_vector_get(fParameters[imem], i) <<std::endl;
     }
 
   private:

@@ -43,18 +43,24 @@ int main(int argc, char* argv[]) {
   libconfig::Config dPDFconfig;
   dPDFconfig.readFile(argv[1]);
 
-  const std::string fitname = dPDFconfig.lookup("fit.name");
-  const std::string base_path = "./res/"+fitname;
-  mkdir(base_path.c_str(), 0777);
-  mkdir((base_path+"/prt").c_str(), 0777);
-  mkdir((base_path+"/par").c_str(), 0777);
-  mkdir((base_path+"/pdf").c_str(), 0777);
-  mkdir((base_path+"/erf").c_str(), 0777);
-
-
   const int replica = atoi(argv[2]);
   libconfig::Setting& fitsetting = dPDFconfig.lookup("fit");
   libconfig::Setting & replica_setting = fitsetting.add ("replica", libconfig::Setting::TypeInt); replica_setting = replica;
+
+  const std::string fitname = dPDFconfig.lookup("fit.name");
+  const std::string base_path = "./res/"+fitname;
+  if (replica == 0)
+  {
+    mkdir(base_path.c_str(), 0777);
+    mkdir((base_path+"/prt").c_str(), 0777);
+    mkdir((base_path+"/par").c_str(), 0777);
+    mkdir((base_path+"/pdf").c_str(), 0777);
+    mkdir((base_path+"/erf").c_str(), 0777);
+    mkdir((base_path+"/thp").c_str(), 0777);
+    mkdir((base_path+"/dat").c_str(), 0777);
+    mkdir((base_path+"/dat/systypes").c_str(), 0777);
+  }
+
   cout << FG_YELLOW << "---------------------------------------------------------------------"<<FG_DEFAULT <<endl;
 
   // Initialise RNG
@@ -141,23 +147,46 @@ int main(int argc, char* argv[]) {
   erf_file << ite_look_back << "  " <<  trnchi2 << "  "<< valchi2<<std::endl; 
   erf_file.close();
 
-
-
+  // Export PDF values
   std::stringstream filename;
   filename << base_path<< "/pdf/replica_"<<replica<<".dat";
   ofstream outfile; outfile.open(filename.str());
   deuteron_look_back.ExportPDF(0,outfile);
 
-  std::stringstream parfilename;
-  parfilename << base_path<< "/par/parameters_"<<replica<<".dat";
-  ofstream parfile; parfile.open(parfilename.str());
-  deuteron_look_back.ExportPars(0,parfile);
-
+  // Export equivalent proton PDFs
   std::stringstream protonfilename;
   protonfilename << base_path<< "/prt/replica_"<<replica<<".dat";
   ofstream protonfile; protonfile.open(protonfilename.str());
   ExportProton(pPDF, dPDFconfig, protonfile);
   protonfile.close();
+
+  // Export best-fit parameters
+  std::stringstream parfilename;
+  parfilename << base_path<< "/par/parameters_"<<replica<<".dat";
+  ofstream parfile; parfile.open(parfilename.str());
+  deuteron_look_back.ExportPars(0,parfile);
+
+  // Export theoretical predictions
+  for (auto exp : experimental_data)
+    for (int i=0; i<exp.GetNSet(); i++)
+    {
+      NNPDF::DataSet const& set = exp.GetSet(i);
+      NNPDF::real* predictions = new NNPDF::real[set.GetNData()];
+      ComputePredictions(&bpPDF, &deuteron_look_back, &set, predictions);
+
+      std::stringstream datafilename;
+      datafilename << base_path<< "/thp/"+set.GetSetName()+"_replica_"<<replica<<".dat";
+      ofstream datafile; datafile.open(datafilename.str());
+
+      for (int j=0; j<set.GetNData(); j++)
+        datafile << predictions[j]<<std::endl;
+      datafile.close();
+
+      // Export filtered data
+      if (replica == 0)
+        set.Export(base_path + "/dat");
+    }
+
 
   exit(0);
 }

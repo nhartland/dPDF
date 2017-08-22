@@ -5,6 +5,7 @@
 // Configuration file
 #include <libconfig.h++>
 #include <gsl/gsl_vector.h>
+#include <sys/stat.h>
 
 #include "NNPDF/fastkernel.h"
 #include "NNPDF/thpredictions.h"
@@ -34,7 +35,7 @@ double ComputeBestChi2(DeuteronSet& dpdf, LHAPDFSet const& pPDF, vector<Experime
     NNPDF::real* chi2 = new NNPDF::real[dpdf.GetMembers()]();
     FastAddChi2(&pPDF, &dpdf, &exp, chi2);
     global_chi2 += chi2[0];
-    std::cout << "Chi^2 for set " << exp.GetExpName() <<"  "<<chi2[0]/((double)exp.GetNData())<<std::endl;
+    // std::cout << "Chi^2 for set " << exp.GetExpName() <<"  "<<chi2[0]/((double)exp.GetNData())<<std::endl;
     delete[] chi2;
   }
   return global_chi2;
@@ -58,6 +59,14 @@ int main(int argc, char* argv[]) {
   dPDFconfig.readFile(argv[1]);
 
   const std::string fitname = dPDFconfig.lookup("fit.name");
+  const std::string base_path = "./res/"+fitname;
+  mkdir(base_path.c_str(), 0777);
+  mkdir((base_path+"/prt").c_str(), 0777);
+  mkdir((base_path+"/par").c_str(), 0777);
+  mkdir((base_path+"/pdf").c_str(), 0777);
+  mkdir((base_path+"/erf").c_str(), 0777);
+
+
   const int replica = atoi(argv[2]);
   libconfig::Setting& fitsetting = dPDFconfig.lookup("fit");
   libconfig::Setting & replica_setting = fitsetting.add ("replica", libconfig::Setting::TypeInt); replica_setting = replica;
@@ -107,42 +116,56 @@ int main(int argc, char* argv[]) {
   // Initialise minimiser
   CMAESMinimizer min(nparam, lambda, dPDFconfig.lookup("fit.sigma"));
   min.NormVect(dpdf.GetBestFit());
+
+  // Initialise lookback
+  int LookBack_iteration = 0;
+  double LookBack_erf = std::numeric_limits<double>::infinity();
+  gsl_vector* LookBack_pars =  gsl_vector_calloc( dpdf.GetNParameters() );
+
+  // Error function output
+  std::stringstream erf_filename;
+  erf_filename << base_path<< "/erf/replica_"<<replica<<".dat";
+  ofstream erf_file; erf_file.open(erf_filename.str());
+
   const int ngen = dPDFconfig.lookup("fit.ngen");
   for (int i=0; i< ngen; i++)
   {
     std::cout << "Iteration: "<<i <<" / " <<ngen <<std::endl;
     min.Iterate(&pPDF, &dpdf, trainExp);
 
-    if (i % 20 == 0 )
-    {
-      // Compute final chi2
-      const double trnchi2 = ComputeBestChi2(dpdf, pPDF, trainExp)/nData_trn;
-      std::cout << "Training chi2: " << trnchi2 <<std::endl;  
+    // Report chi2
+    const double trnchi2 = ComputeBestChi2(dpdf, pPDF, trainExp)/nData_trn;
+    const double valchi2 = ComputeBestChi2(dpdf, pPDF, validExp)/nData_val;
+    erf_file << i << "  " <<  trnchi2 << "  "<< valchi2<<std::endl; 
 
-      const double valchi2 = ComputeBestChi2(dpdf, pPDF, validExp)/nData_val;
-      std::cout << "Validation chi2: " << valchi2 <<std::endl;  
-    } 
+    if (valchi2 < LookBack_erf)
+    {
+      LookBack_iteration = i;
+      LookBack_erf = valchi2;
+      gsl_vector_memcpy(LookBack_pars, dpdf.GetBestFit());
+    }
   }
 
-
-  // Compute final chi2
-  const double bfchi2 = ComputeBestChi2(dpdf, pPDF, trainExp)/nData_trn;
-  std::cout << "Final chi2: " << bfchi2 <<std::endl;
-
-  const std::string root = "./";
+  // Report chi2
+  gsl_vector_memcpy(dpdf.GetBestFit(), LookBack_pars);
+  gsl_vector_free(LookBack_pars);
+  const double trnchi2 = ComputeBestChi2(dpdf, pPDF, trainExp)/nData_trn;
+  const double valchi2 = ComputeBestChi2(dpdf, pPDF, validExp)/nData_val;
+  erf_file << LookBack_iteration << "  " <<  trnchi2 << "  "<< valchi2<<std::endl; 
+  erf_file.close();
 
   std::stringstream filename;
-  filename << root<< "res/replica_"<<replica<<".dat";
+  filename << base_path<< "/pdf/replica_"<<replica<<".dat";
   ofstream outfile; outfile.open(filename.str());
   dpdf.ExportBestFit(outfile);
 
   std::stringstream parfilename;
-  parfilename << root<< "par/parameters_"<<replica<<".dat";
+  parfilename << base_path<< "/par/parameters_"<<replica<<".dat";
   ofstream parfile; parfile.open(parfilename.str());
   dpdf.ExportPars(parfile);
 
   std::stringstream protonfilename;
-  protonfilename << root<< "prt/replica_"<<replica<<".dat";
+  protonfilename << base_path<< "/prt/replica_"<<replica<<".dat";
   ofstream protonfile; protonfile.open(protonfilename.str());
   ExportProton(pPDF, dPDFconfig, protonfile);
   protonfile.close();

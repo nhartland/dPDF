@@ -26,21 +26,6 @@ using namespace std;
 void gsl_handler (const char * msg, const char * source, int line, int)
 { std::cerr << "gsl: " << source<<":"<<line<<": " <<msg <<std::endl;}
 
-double ComputeBestChi2(DeuteronSet& dpdf, LHAPDFSet const& pPDF, vector<Experiment> const& exps)
-{
-  dpdf.UseBestFit();
-  double global_chi2 = 0;
-  for (auto exp : exps)
-  {
-    NNPDF::real* chi2 = new NNPDF::real[dpdf.GetMembers()]();
-    FastAddChi2(&pPDF, &dpdf, &exp, chi2);
-    global_chi2 += chi2[0];
-    // std::cout << "Chi^2 for set " << exp.GetExpName() <<"  "<<chi2[0]/((double)exp.GetNData())<<std::endl;
-    delete[] chi2;
-  }
-  return global_chi2;
-}
-
 int main(int argc, char* argv[]) {
 
   // Set LHAPDF verbosity
@@ -137,8 +122,9 @@ int main(int argc, char* argv[]) {
 
     // Report chi2
     gsl_vector_memcpy(bpdf.GetBestFit(), dpdf.GetBestFit());
-    const double trnchi2 = ComputeBestChi2(bpdf, bpPDF, trainExp)/nData_trn;
-    const double valchi2 = ComputeBestChi2(bpdf, bpPDF, validExp)/nData_val;
+    bpdf.UseBestFit();
+    const double trnchi2 = ComputeMemberChi2(&bpPDF, &bpdf, 0, trainExp)/nData_trn;
+    const double valchi2 = ComputeMemberChi2(&bpPDF, &bpdf, 0, validExp)/nData_val;
     erf_file << i << "  " <<  trnchi2 << "  "<< valchi2<<std::endl; 
 
     if (valchi2 < LookBack_erf)
@@ -154,8 +140,8 @@ int main(int argc, char* argv[]) {
   gsl_vector_free(LookBack_pars);
   bpdf.UseBestFit();
 
-  const double trnchi2 = ComputeBestChi2(bpdf, bpPDF, trainExp)/nData_trn;
-  const double valchi2 = ComputeBestChi2(bpdf, bpPDF, validExp)/nData_val;
+  const double trnchi2 = ComputeMemberChi2(&bpPDF, &bpdf, 0, trainExp)/nData_trn;
+  const double valchi2 = ComputeMemberChi2(&bpPDF, &bpdf, 0, validExp)/nData_val;
   erf_file << LookBack_iteration << "  " <<  trnchi2 << "  "<< valchi2<<std::endl; 
   erf_file.close();
 

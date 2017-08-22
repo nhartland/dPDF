@@ -68,3 +68,16 @@ void FastAddChi2(const PDFSet* proton, const PDFSet* deuteron, const Experiment*
 
   delete[] theory;
 }
+
+double ComputeMemberChi2(const PDFSet* proton, const PDFSet* deuteron, const int imem, std::vector<Experiment> const& exps)
+{
+  double global_chi2 = 0;
+  for (auto exp : exps)
+  {
+    NNPDF::real* chi2 = new NNPDF::real[proton->GetMembers()]();
+    FastAddChi2(proton, deuteron, &exp, chi2);
+    global_chi2 += chi2[imem];
+    delete[] chi2;
+  }
+  return global_chi2;
+}

@@ -19,3 +19,4 @@ using NNPDF::FKSet;
 void FastAddChi2(const PDFSet*, const PDFSet*, const Experiment*, real* chi2);
 void Convolute(const PDFSet*, const PDFSet*, const Experiment*, real *);
 void ComputePredictions(const PDFSet*, const PDFSet*, const FKSet*, real*);
+double ComputeMemberChi2(const PDFSet*, const PDFSet*, const int, std::vector<Experiment> const&);

@@ -113,6 +113,7 @@ int main(int argc, char* argv[]) {
 
   // Initialise proton parametrisation
   LHAPDFSet pPDF(dPDFconfig.lookup("fit.proton"), replica + 1, lambda);
+  LHAPDFSet bpPDF(dPDFconfig.lookup("fit.proton"), replica + 1, 1);
 
   // Initialise minimiser
   CMAESMinimizer min(nparam, lambda, dPDFconfig.lookup("fit.sigma"));
@@ -135,37 +136,38 @@ int main(int argc, char* argv[]) {
     min.Iterate(&pPDF, &dpdf, trainExp);
 
     // Report chi2
-    const double trnchi2 = ComputeBestChi2(dpdf, pPDF, trainExp)/nData_trn;
-    const double valchi2 = ComputeBestChi2(dpdf, pPDF, validExp)/nData_val;
+    gsl_vector_memcpy(bpdf.GetBestFit(), dpdf.GetBestFit());
+    const double trnchi2 = ComputeBestChi2(bpdf, bpPDF, trainExp)/nData_trn;
+    const double valchi2 = ComputeBestChi2(bpdf, bpPDF, validExp)/nData_val;
     erf_file << i << "  " <<  trnchi2 << "  "<< valchi2<<std::endl; 
 
     if (valchi2 < LookBack_erf)
     {
       LookBack_iteration = i;
       LookBack_erf = valchi2;
-      gsl_vector_memcpy(LookBack_pars, dpdf.GetBestFit());
+      gsl_vector_memcpy(LookBack_pars, bpdf.GetBestFit());
     }
   }
 
   // Report chi2
-  gsl_vector_memcpy(dpdf.GetBestFit(), LookBack_pars);
+  gsl_vector_memcpy(bpdf.GetBestFit(), LookBack_pars);
   gsl_vector_free(LookBack_pars);
-  dpdf.UseBestFit();
+  bpdf.UseBestFit();
 
-  const double trnchi2 = ComputeBestChi2(dpdf, pPDF, trainExp)/nData_trn;
-  const double valchi2 = ComputeBestChi2(dpdf, pPDF, validExp)/nData_val;
+  const double trnchi2 = ComputeBestChi2(bpdf, bpPDF, trainExp)/nData_trn;
+  const double valchi2 = ComputeBestChi2(bpdf, bpPDF, validExp)/nData_val;
   erf_file << LookBack_iteration << "  " <<  trnchi2 << "  "<< valchi2<<std::endl; 
   erf_file.close();
 
   std::stringstream filename;
   filename << base_path<< "/pdf/replica_"<<replica<<".dat";
   ofstream outfile; outfile.open(filename.str());
-  dpdf.ExportPDF(0,outfile);
+  bpdf.ExportPDF(0,outfile);
 
   std::stringstream parfilename;
   parfilename << base_path<< "/par/parameters_"<<replica<<".dat";
   ofstream parfile; parfile.open(parfilename.str());
-  dpdf.ExportPars(0,parfile);
+  bpdf.ExportPars(0,parfile);
 
   std::stringstream protonfilename;
   protonfilename << base_path<< "/prt/replica_"<<replica<<".dat";

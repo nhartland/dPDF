@@ -69,13 +69,12 @@ private:
   void CMA(int const& NIte, vector<size_t> const& rank, std::vector<gsl_vector*> const& yvals, gsl_vector const* yavg);
 
   void ComputeEigensystem();
-  void ComputeErf(LHAPDFSet*, DeuteronSet*, vector<Experiment> const&);
+  std::vector<real> ComputeErf(LHAPDFSet*, DeuteronSet*, vector<Experiment> const&);
   
 protected:
   const CMAESParam fCMAES;
   size_t fIte;
   double fSigma;
-  real*  fChi2Mem;
   gsl_vector *fpsigma, *fpc;
   gsl_matrix *fC, *fBD, *finvC;  
   gsl_eigen_symmv_workspace *fwrkspc;

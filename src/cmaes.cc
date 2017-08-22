@@ -23,26 +23,24 @@ using NNPDF::Parametrisation;
 using NNPDF::ThPredictions;
 using NNPDF::RandomGenerator;
 
-void CMAESMinimizer::ComputeErf(LHAPDFSet* proton, DeuteronSet* deuteron, vector<Experiment> const& exps)
+std::vector<real> CMAESMinimizer::ComputeErf(LHAPDFSet* proton, DeuteronSet* deuteron, vector<Experiment> const& exps)
 {
   // Init PDF
   deuteron->InitPDFSet();
-  std::fill(fChi2Mem, fChi2Mem+fCMAES.lambda, 0);
-
   if ( deuteron->GetMembers() != fCMAES.lambda )
   {
     std::cerr << "Fatal Error: There are not " << fCMAES.lambda << " mutants in the deuteronset" <<std::endl;
     exit(-1);
   }
-
   // Calculate chi^2 and resort members after each set
+  std::vector<real> Chi2Mem(fCMAES.lambda, 0);
   for (auto exp : exps)
-    FastAddChi2(proton, deuteron, &exp, fChi2Mem);
-
+    FastAddChi2(proton, deuteron, &exp, Chi2Mem.data());
   // Check for anomalous chi^2 values
-  for (int j=0; j< deuteron->GetMembers(); j++)
-    if (fChi2Mem[j] >= 1E20 || std::isnan(fChi2Mem[j]) || std::isinf(fChi2Mem[j]))
-      std::cerr << "Anomalous chi^2: "<< fChi2Mem[j] <<std::endl;
+  for (auto Chi2 : Chi2Mem)
+    if (Chi2 >= 1E20 || std::isnan(Chi2) || std::isinf(Chi2))
+      std::cerr << "Anomalous chi^2: "<< Chi2 <<std::endl;
+  return Chi2Mem;
 }
 
 // ************************* CMA-ES MINIMIZER *****************************
@@ -131,7 +129,6 @@ CMAESMinimizer::CMAESMinimizer(int const& n, int const& lambda, double const& si
 fCMAES(n, lambda),
 fIte(0),
 fSigma(sigma),
-fChi2Mem(new real[lambda]()),
 fpsigma(gsl_vector_calloc( n )),
 fpc(    gsl_vector_calloc( n )),
 fC(     gsl_matrix_calloc( n, n )),
@@ -205,12 +202,11 @@ void CMAESMinimizer::Iterate(LHAPDFSet* proton, DeuteronSet* deuteron, vector<Ex
   const vector<gsl_vector*> yvals = Mutation(deuteron, m);
 
   // Compute ERF and rank members
-  ComputeErf(proton, deuteron, exps);
-  vector<double> erf_srt(fChi2Mem, fChi2Mem + fCMAES.lambda);
+  const vector<real> erf = ComputeErf(proton, deuteron, exps);
+  vector<real> erf_srt = erf; std::sort(erf_srt.begin(), erf_srt.end());
   vector<size_t> irank_map(fCMAES.lambda,0); // Weight-ordered map to members (index is i)
-  std::sort(erf_srt.begin(), erf_srt.end());
   for (int i=0; i<fCMAES.lambda; i++)
-    irank_map[std::distance(erf_srt.begin(), std::find(erf_srt.begin(), erf_srt.end(), fChi2Mem[i]))] = i;
+    irank_map[std::distance(erf_srt.begin(), std::find(erf_srt.begin(), erf_srt.end(), erf[i]))] = i;
 
   // Compute weighted shift and set new mean
   gsl_vector* yavg = Recombination(deuteron, irank_map, yvals);

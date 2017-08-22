@@ -73,17 +73,19 @@ int main(int argc, char* argv[]) {
 
 
   // Initialise and filter datasets
-  std::vector<NNPDF::Experiment> trainExp;
-  std::vector<NNPDF::Experiment> validExp;
-  InitData(dPDFconfig, trainExp, validExp);
+  std::vector<NNPDF::Experiment> experimental_data;
+  std::vector<NNPDF::Experiment> training_data;
+  std::vector<NNPDF::Experiment> validation_data;
+  ReadData(dPDFconfig, experimental_data);
+  InitData(dPDFconfig, experimental_data, training_data, validation_data);
 
   double nData_trn = 0;
-  for (size_t i=0; i<trainExp.size(); i++)
-    nData_trn += trainExp[i].GetNData();
+  for (size_t i=0; i<training_data.size(); i++)
+    nData_trn += training_data[i].GetNData();
 
   double nData_val = 0;
-  for (size_t i=0; i<validExp.size(); i++)
-    nData_val += validExp[i].GetNData();
+  for (size_t i=0; i<validation_data.size(); i++)
+    nData_val += validation_data[i].GetNData();
 
   cout << FG_YELLOW << "---------------------------------------------------------------------"<<FG_DEFAULT <<endl;
   cout              << "                            deuteron fitter                            "<<             endl;
@@ -115,14 +117,14 @@ int main(int argc, char* argv[]) {
   for (int i=0; i< ngen; i++)
   {
     std::cout << "Iteration: "<<i <<" / " <<ngen <<std::endl;
-    min.Iterate(&pPDF, &deuteron_search_mutants, deuteron_search_centre.GetParameters(0), trainExp);
+    min.Iterate(&pPDF, &deuteron_search_mutants, deuteron_search_centre.GetParameters(0), training_data);
 
     // Report chi2
     // gsl_vector_memcpy(deuteron_search_centre.GetParameters(0), deuteron_search_mutants.GetBestFit());
     deuteron_search_centre.InitPDFSet();
 
-    const double trnchi2 = ComputeMemberChi2(&bpPDF, &deuteron_search_centre, 0, trainExp)/nData_trn;
-    const double valchi2 = ComputeMemberChi2(&bpPDF, &deuteron_search_centre, 0, validExp)/nData_val;
+    const double trnchi2 = ComputeMemberChi2(&bpPDF, &deuteron_search_centre, 0, training_data)/nData_trn;
+    const double valchi2 = ComputeMemberChi2(&bpPDF, &deuteron_search_centre, 0, validation_data)/nData_val;
     erf_file << i << "  " <<  trnchi2 << "  "<< valchi2<<std::endl; 
 
     if (valchi2 < erf_look_back)
@@ -134,10 +136,12 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  const double trnchi2 = ComputeMemberChi2(&bpPDF, &deuteron_look_back, 0, trainExp)/nData_trn;
-  const double valchi2 = ComputeMemberChi2(&bpPDF, &deuteron_look_back, 0, validExp)/nData_val;
+  const double trnchi2 = ComputeMemberChi2(&bpPDF, &deuteron_look_back, 0, training_data)/nData_trn;
+  const double valchi2 = ComputeMemberChi2(&bpPDF, &deuteron_look_back, 0, validation_data)/nData_val;
   erf_file << ite_look_back << "  " <<  trnchi2 << "  "<< valchi2<<std::endl; 
   erf_file.close();
+
+
 
   std::stringstream filename;
   filename << base_path<< "/pdf/replica_"<<replica<<".dat";

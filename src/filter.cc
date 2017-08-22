@@ -47,8 +47,8 @@ bool passKinCuts(libconfig::Config const& settings, NNPDF::DataSet const& set, i
   return true;
 }
 
-// initialises all datasets
-void InitData(libconfig::Config const& settings, std::vector<NNPDF::Experiment>& outexp)
+// Initialises all datasets
+void ReadData(libconfig::Config const& settings, std::vector<NNPDF::Experiment>& outexp)
 {
   cout<<endl;
   cout << FG_YELLOW << "---------------------------------------------------------------------"<<FG_DEFAULT <<endl;
@@ -152,12 +152,8 @@ void InitData(libconfig::Config const& settings, std::vector<NNPDF::Experiment>&
 }
 
 /* Initialises datasets and performs tr-valid split */
-void InitData(libconfig::Config const& settings, std::vector<NNPDF::Experiment>& trainexp, std::vector<NNPDF::Experiment>& validexp)
+void InitData(libconfig::Config const& settings, std::vector<NNPDF::Experiment> experiments, std::vector<NNPDF::Experiment>& trainexp, std::vector<NNPDF::Experiment>& validexp)
 {
-  // Fetch total experiments
-  std::vector<NNPDF::Experiment> experiments;
-  InitData(settings, experiments);
-
   // Make artificial data replica
   for (size_t i=0; i<experiments.size(); i++)
     experiments[i].MakeReplica();

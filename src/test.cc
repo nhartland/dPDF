@@ -2,25 +2,13 @@
 
 #include "LHAPDF/LHAPDF.h"
 
-// Configuration file
-#include <libconfig.h++>
-#include <gsl/gsl_vector.h>
-
 #include "NNPDF/fastkernel.h"
 #include "NNPDF/thpredictions.h"
 #include "NNPDF/lhapdfset.h"
 #include "NNPDF/randomgenerator.h"
-#include "NNPDF/chisquared.h"
 
-#include "ns_network.h"
-#include "fastaddchi2.h"
-#include "deuteronset.h"
-#include "cmaes.h"
-#include "filter.h"
-#include "colour.h"
 #include "proton.h"
 
-using namespace Colour;
 using namespace std;
 
 /*
@@ -29,6 +17,8 @@ using namespace std;
     a) Using the \sigma_pd FK table from APFEL
     b) Using a \sigma_pp FK table and setting T3=V3=0
   Under the assumptions used in NNPDF these should be the same.
+  NOTE: The proton-deuteron rotation in APFEL assumes data is given /per nucleon/
+        hence the final factor of /2.0
 */
 
 int main(int argc, char* argv[]) {
@@ -45,7 +35,7 @@ int main(int argc, char* argv[]) {
 
   NNPDF::ThPredictions ratio = multibeam/singlebeam;
   for (int i=0; i<ratio.GetNData(); i++)
-    std::cout << ratio.GetObsCV(i) <<std::endl;
+    std::cout << ratio.GetObsCV(i)/2.0 <<std::endl;
 
   exit(0);
 }

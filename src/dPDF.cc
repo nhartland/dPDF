@@ -30,6 +30,7 @@ int main(int argc, char* argv[]) {
 
   // Set LHAPDF verbosity
   LHAPDF::setVerbosity(0);
+  NNPDF::SetVerbosity(0);
 
   // Set GSL error handler
   gsl_set_error_handler (&gsl_handler);

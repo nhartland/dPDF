@@ -4,8 +4,7 @@ CXXFLAGS = 	$(PRJCXXFLAGS)
 LDLIBS   =  $(PRJLDFLAGS)
 
 VPATH=./src
-MAIN = dPDF test
-DEV = appl_optgrid
+MAIN = dPDF test plotter
 #ftdy_hcx
 
 .PHONY: all clean
@@ -13,7 +12,9 @@ DEV = appl_optgrid
 all: $(MAIN)
 
 dPDF: dPDF.o filter.o cmaes.o ns_network.o fastaddchi2.o
-test: test.o filter.o cmaes.o ns_network.o fastaddchi2.o
+test: test.o
+plotter: plotter.o filter.o
+
 clean:
 	-$(RM) -f $(MAIN)
 	-$(RM) *.o

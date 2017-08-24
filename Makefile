@@ -13,7 +13,7 @@ all: $(MAIN)
 
 dPDF: dPDF.o filter.o cmaes.o ns_network.o fastaddchi2.o
 test: test.o
-plotter: plotter.o filter.o
+plotter: plotter.o filter.o ns_network.o fastaddchi2.o
 
 clean:
 	-$(RM) -f $(MAIN)

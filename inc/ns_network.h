@@ -20,6 +20,7 @@ public:
   NostateMLP(std::vector<int> const& arch);
   ~NostateMLP();
 
+  static int get_nparam(std::vector<int> const& arch);
   void Compute(const gsl_vector* par, real const& x, real* out) const;
   int const& GetNParameters() const {return fNParameters;};
 protected:

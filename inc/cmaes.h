@@ -12,23 +12,22 @@
 #include <vector>
 #include <iomanip>  
 
-#include "NNPDF/common.h"
-#include "deuteronset.h"
-using std::vector;
-
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_cblas.h>
 #include <gsl/gsl_blas.h>
 
-#include <NNPDF/experiments.h>
-#include <NNPDF/lhapdfset.h>
-using NNPDF::Experiment;
-using NNPDF::LHAPDFSet;
+#include "NNPDF/common.h"
+using std::vector;
 
 // *************************************************************************************
 
+// Abstract class for computing costs for given parameter vectors
+struct CostComputer
+{ virtual vector<NNPDF::real> operator()(vector<gsl_vector*>const&) const = 0; };
+
+// CMA-ES internal parameters
 class CMAESParam
 {
 public:
@@ -58,18 +57,17 @@ public:
   CMAESMinimizer(int const& n, int const& lambda, double const& sigma);
   ~CMAESMinimizer();
 
-  void Iterate(LHAPDFSet*, DeuteronSet*, gsl_vector*, vector<Experiment> const&);
+  void Iterate(gsl_vector*, const CostComputer*);
   void NormVect(gsl_vector*) const; //!< Normally distributed random vector
 
 private:
-  std::vector<gsl_vector*> Mutation(DeuteronSet* pdf, const gsl_vector* m) const;
+  void Mutation(std::vector<gsl_vector*>& xv, std::vector<gsl_vector*>& yv, const gsl_vector* m) const;
   gsl_vector* Recombination(gsl_vector* m, vector<size_t> const& rank, std::vector<gsl_vector*> const& yvals) const;
 
   void CSA(gsl_vector const* yavg);
   void CMA(int const& NIte, vector<size_t> const& rank, std::vector<gsl_vector*> const& yvals, gsl_vector const* yavg);
 
   void ComputeEigensystem();
-  std::vector<real> ComputeErf(LHAPDFSet*, DeuteronSet*, vector<Experiment> const&);
   
 protected:
   const CMAESParam fCMAES;

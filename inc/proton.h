@@ -20,8 +20,8 @@ public:
 	LHAPDFSet(name, etype)
 	{};
 
-  IsoProtonSet(const std::string name, int member, erType etype):
-  LHAPDFSet(name, member, etype)
+  IsoProtonSet(const std::string name, int member):
+  LHAPDFSet(name, member, 1)
   {};
 
  	virtual void GetPDF(real const& x, real const& Q2, int const& n, real* pdf) const

@@ -6,6 +6,7 @@
 #include <libconfig.h++>
 #include <gsl/gsl_vector.h>
 #include <sys/stat.h>
+#include <stdio.h>
 
 #include "NNPDF/fastkernel.h"
 #include "NNPDF/thpredictions.h"
@@ -15,6 +16,7 @@
 
 #include "fastaddchi2.h"
 #include "deuteronset.h"
+#include "ns_network.h"
 #include "cmaes.h"
 #include "filter.h"
 #include "colour.h"
@@ -53,11 +55,10 @@ int main(int argc, char* argv[]) {
   if (replica == 0)
   {
     mkdir(base_path.c_str(), 0777);
-    mkdir((base_path+"/prt").c_str(), 0777);
     mkdir((base_path+"/par").c_str(), 0777);
-    mkdir((base_path+"/pdf").c_str(), 0777);
     mkdir((base_path+"/erf").c_str(), 0777);
     mkdir((base_path+"/thp").c_str(), 0777);
+    mkdir((base_path+"/thd").c_str(), 0777);
     mkdir((base_path+"/dat").c_str(), 0777);
     mkdir((base_path+"/dat/systypes").c_str(), 0777);
   }
@@ -77,7 +78,6 @@ int main(int argc, char* argv[]) {
 
   cout              << "           RNG Init - Mode:"<<method<<"  Seed:"<<globalseed<<"  ReplicaSeed: "<<fitseed<<  endl;
   cout << FG_YELLOW << "---------------------------------------------------------------------"<<FG_DEFAULT <<endl;
-
 
   // Initialise and filter datasets
   std::vector<NNPDF::Experiment> experimental_data;
@@ -99,21 +99,22 @@ int main(int argc, char* argv[]) {
   cout              << "                     Fit: "<<fitname<<"     Replica: "<<replica<<"   "<<             endl;
   cout << FG_YELLOW << "---------------------------------------------------------------------"<<FG_DEFAULT <<endl;
 
-  // Initialise prototype parametrisation
-  DeuteronSet deuteron_search_mutants(dPDFconfig, dPDFconfig.lookup("fit.lambda"));
-  DeuteronSet deuteron_search_centre (dPDFconfig, 1); // Centre of search distribution
-  DeuteronSet deuteron_look_back     (dPDFconfig, 1); // Best-fit PDFs
-  const int lambda = deuteron_search_mutants.GetMembers();
-  const int nparam = deuteron_search_mutants.GetNParameters();
+  const int lambda = dPDFconfig.lookup("fit.lambda");
+  const int nparam = NostateMLP::get_nparam(pdf_architecture);
   int ite_look_back = -1; double erf_look_back = std::numeric_limits<double>::infinity();
-
-  // Initialise proton parametrisation
-  LHAPDFSet pPDF(dPDFconfig.lookup("fit.proton"), replica + 1, lambda);
-  LHAPDFSet bpPDF(dPDFconfig.lookup("fit.proton"), replica + 1, 1);
 
   // Initialise minimiser
   CMAESMinimizer min(nparam, lambda, dPDFconfig.lookup("fit.sigma"));
-  min.NormVect(deuteron_search_centre.GetParameters(0));
+  gsl_vector* deuteron_search_centre = gsl_vector_alloc(nparam); // Centre of search distribution
+  gsl_vector* deuteron_look_back     = gsl_vector_alloc(nparam); // Look-back best fit
+  min.NormVect(deuteron_search_centre);
+
+  // Initialise proton parametrisation and cost functions
+  LHAPDFSet pPDF(dPDFconfig.lookup("fit.proton"), replica + 1, lambda);
+  LHAPDFSet bpPDF(dPDFconfig.lookup("fit.proton"), replica + 1, 1);
+  ErfComputer training_cost(pPDF, training_data);
+  ErfComputer training_cost_centre(bpPDF, training_data);
+  ErfComputer validation_cost_centre(bpPDF, validation_data);
 
   // Error function output
   std::stringstream erf_filename;
@@ -124,70 +125,63 @@ int main(int argc, char* argv[]) {
   for (int i=0; i< ngen; i++)
   {
     std::cout << "Iteration: "<<i <<" / " <<ngen <<std::endl;
-    min.Iterate(&pPDF, &deuteron_search_mutants, deuteron_search_centre.GetParameters(0), training_data);
+    min.Iterate(deuteron_search_centre, &training_cost);
 
-    // Report chi2
-    // gsl_vector_memcpy(deuteron_search_centre.GetParameters(0), deuteron_search_mutants.GetBestFit());
-    deuteron_search_centre.InitPDFSet();
-
-    const double trnchi2 = ComputeMemberChi2(&bpPDF, &deuteron_search_centre, 0, training_data)/nData_trn;
-    const double valchi2 = ComputeMemberChi2(&bpPDF, &deuteron_search_centre, 0, validation_data)/nData_val;
+    const double trnchi2 = training_cost_centre(deuteron_search_centre)/nData_trn;
+    const double valchi2 = validation_cost_centre(deuteron_search_centre)/nData_val;
     erf_file << i << "  " <<  trnchi2 << "  "<< valchi2<<std::endl; 
 
     if (valchi2 < erf_look_back)
     {
-      ite_look_back = i;
-      erf_look_back = valchi2;
-      gsl_vector_memcpy(deuteron_look_back.GetParameters(0), deuteron_search_centre.GetParameters(0));
-      deuteron_look_back.InitPDFSet();
+      ite_look_back = i; erf_look_back = valchi2;
+      gsl_vector_memcpy(deuteron_look_back, deuteron_search_centre);
     }
   }
 
-  const double trnchi2 = ComputeMemberChi2(&bpPDF, &deuteron_look_back, 0, training_data)/nData_trn;
-  const double valchi2 = ComputeMemberChi2(&bpPDF, &deuteron_look_back, 0, validation_data)/nData_val;
-  erf_file << ite_look_back << "  " <<  trnchi2 << "  "<< valchi2<<std::endl; 
+  const double trnchi2 = training_cost_centre(deuteron_look_back)/nData_trn;
+  const double valchi2 = validation_cost_centre(deuteron_look_back)/nData_val;
+  const double glbchi2 = ErfComputer(bpPDF, experimental_data)(deuteron_look_back)/(nData_val + nData_trn);
+  erf_file << ite_look_back << "  " <<  trnchi2 << "  "<< valchi2<<"  "<<glbchi2<<std::endl; 
   erf_file.close();
 
-  // Export PDF values
-  std::stringstream filename;
-  filename << base_path<< "/pdf/replica_"<<replica<<".dat";
-  ofstream outfile; outfile.open(filename.str());
-  deuteron_look_back.ExportPDF(0,outfile);
-
-  // Export equivalent proton PDFs
-  std::stringstream protonfilename;
-  protonfilename << base_path<< "/prt/replica_"<<replica<<".dat";
-  ofstream protonfile; protonfile.open(protonfilename.str());
-  ExportProton(pPDF, dPDFconfig, protonfile);
-  protonfile.close();
-
-  // Export best-fit parameters
-  std::stringstream parfilename;
-  parfilename << base_path<< "/par/parameters_"<<replica<<".dat";
-  ofstream parfile; parfile.open(parfilename.str());
-  deuteron_look_back.ExportPars(0,parfile);
-
-  // Export theoretical predictions
+  // // Export theoretical predictions
+  std::vector<gsl_vector*> final_vec = {deuteron_look_back};
+  DeuteronSet  deuteron(final_vec);
+  IsoProtonSet isoproton(dPDFconfig.lookup("fit.proton"), replica+1);
   for (auto exp : experimental_data)
     for (int i=0; i<exp.GetNSet(); i++)
     {
       NNPDF::DataSet const& set = exp.GetSet(i);
-      NNPDF::real* predictions = new NNPDF::real[set.GetNData()];
-      ComputePredictions(&bpPDF, &deuteron_look_back, &set, predictions);
 
-      std::stringstream datafilename;
-      datafilename << base_path<< "/thp/"+set.GetSetName()+"_replica_"<<replica<<".dat";
-      ofstream datafile; datafile.open(datafilename.str());
+      NNPDF::real* deuteron_theory = new NNPDF::real[set.GetNData()];
+      ComputePredictions(&bpPDF, &deuteron, &set, deuteron_theory);
+      NNPDF::real* isoproton_theory = new NNPDF::real[set.GetNData()];
+      ComputePredictions(&bpPDF, &isoproton, &set, isoproton_theory);
+
+      ofstream datafile, deuteronfile, protonfile; 
+
+
+      if (replica == 0) datafile.open(base_path + "/dat/"+set.GetSetName()+".dat");
+      deuteronfile.open (base_path + "/thd/"+set.GetSetName()+"_replica_"+to_string(replica)+".dat");
+      protonfile.open   (base_path + "/thp/"+set.GetSetName()+"_replica_"+to_string(replica)+".dat");
 
       for (int j=0; j<set.GetNData(); j++)
-        datafile << predictions[j]<<std::endl;
-      datafile.close();
+      {
+        if (replica == 0)  datafile << set.GetData(j) <<"  "<<set.GetCovMat()[j][j] <<std::endl;
+        deuteronfile << deuteron_theory[j] << std::endl;
+        protonfile   << isoproton_theory[j] << std::endl;
+      }
 
-      // Export filtered data
-      if (replica == 0)
-        set.Export(base_path + "/dat");
+      datafile.close();
+      protonfile.close();
     }
 
+  // Export best-fit parameters
+  FILE * f = fopen ( (base_path + "/par/parameters_" + to_string(replica)+".dat").c_str(), "w");
+  gsl_vector_fwrite (f, deuteron_look_back); fclose (f);
+
+  gsl_vector_free(deuteron_search_centre);
+  gsl_vector_free(deuteron_look_back);
 
   exit(0);
 }

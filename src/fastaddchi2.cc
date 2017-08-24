@@ -10,6 +10,7 @@
 #include <NNPDF/chisquared.h>
 #include <NNPDF/exceptions.h>
 #include <NNPDF/utils.h>
+#include "deuteronset.h"
 
 using NNPDF::ThPredictions;
 
@@ -69,15 +70,20 @@ void FastAddChi2(const PDFSet* proton, const PDFSet* deuteron, const Experiment*
   delete[] theory;
 }
 
-double ComputeMemberChi2(const PDFSet* proton, const PDFSet* deuteron, const int imem, std::vector<Experiment> const& exps)
+vector<real> ErfComputer::ComputeErf(vector<gsl_vector*>const& parameters) const
 {
-  double global_chi2 = 0;
+  DeuteronSet mutants(parameters);
+  std::vector<real> Chi2Mem(mutants.GetMembers(), 0);
   for (auto exp : exps)
-  {
-    NNPDF::real* chi2 = new NNPDF::real[proton->GetMembers()]();
-    FastAddChi2(proton, deuteron, &exp, chi2);
-    global_chi2 += chi2[imem];
-    delete[] chi2;
-  }
-  return global_chi2;
+    FastAddChi2(&proton, &mutants, &exp, Chi2Mem.data());
+  for (real& Chi2 : Chi2Mem) // Check for anomalous chi2 values (probably due to integration failure)
+    if (Chi2 >= 1E20 || std::isnan(Chi2) || std::isinf(Chi2))
+      Chi2 = std::numeric_limits<real>::infinity();
+  return Chi2Mem;
+}
+
+real ErfComputer::operator()(gsl_vector* par) const
+{
+  const vector<gsl_vector*> parameters = {par}; 
+  return ComputeErf(parameters)[0];
 }

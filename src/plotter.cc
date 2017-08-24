@@ -34,6 +34,8 @@ int main(int argc, char* argv[]) {
 
   const std::string fitname = dPDFconfig.lookup("fit.name");
   const std::string base_path = "./res/"+fitname;
+  const int n_replicas = dPDFconfig.lookup("fit.nrep");
+  const int nparam = NostateMLP::get_nparam(pdf_architecture);
 
   // Initialise and filter datasets
   std::vector<NNPDF::Experiment> experimental_data;
@@ -42,6 +44,19 @@ int main(int argc, char* argv[]) {
   double nData = 0;
   for (auto exp: experimental_data)
     nData += exp.GetNData();
+
+  // Read fit parameters
+  std::vector<gsl_vector*> fit_parameters;
+  for (int i=0; i<n_replicas; i++)
+  {
+    gsl_vector* parameters = gsl_vector_alloc(nparam);
+    FILE * f = fopen ( (base_path + "/par/parameters_" + to_string(i)+ ".dat").c_str(), "r");
+    assert( gsl_vector_fread (f, parameters) == 0 );
+    fit_parameters.push_back(parameters);
+  }
+
+  LHAPDFSet   proton(dPDFconfig.lookup("fit.proton"), NNPDF::PDFSet::ER_MC);
+  DeuteronSet deuteron(fit_parameters, NNPDF::PDFSet::ER_MC);
 
   exit(0);
 }

@@ -15,15 +15,6 @@
 using namespace NNPDF;
 
 
-int get_nparam(std::vector<int> const& arch)
-{
-  int nparam = 0;
-  for (int i=1; i<arch.size(); i++)
-    nparam += arch[i]*arch[i-1] + arch[i];
-  nparam -= arch.back(); // Remove last layer bias
-  return nparam+1; // + 1 due to valence low-x preprocessing
-}
-
 NostateMLP::NostateMLP(std::vector<int> const& arch):
 fArch(arch),
 fNParameters(get_nparam(arch)),
@@ -40,6 +31,15 @@ fOutput(new real[fNOutputs]())
 NostateMLP::~NostateMLP()
 {
   delete[] fOutput;
+}
+
+int NostateMLP::get_nparam(std::vector<int> const& arch)
+{
+  int nparam = 0;
+  for (int i=1; i<arch.size(); i++)
+    nparam += arch[i]*arch[i-1] + arch[i];
+  nparam -= arch.back(); // Remove last layer bias
+  return nparam+1; // + 1 due to valence low-x preprocessing
 }
 
 void NostateMLP::Compute(const gsl_vector* par, real const& x, real* out) const

@@ -1,9 +1,5 @@
-// $Id: minimizer.cc 1310 2013-11-06 16:01:25Z stefano.carrazza@mi.infn.it $
-//
-// NNPDF++ 2012-2015
-//
-// Authors: Nathan Hartland,  n.p.hartland@ed.ac.uk
-//          Stefano Carrazza, stefano.carrazza@mi.infn.it
+// CMA-ES minimisation code
+// Nathan Hartland 2017
 
 #include <cstdlib>
 #include <cmath>
@@ -11,37 +7,9 @@
 #include <numeric>
 
 #include "cmaes.h"
-#include "fastaddchi2.h"
 
-#include <NNPDF/parametrisation.h>
-#include <NNPDF/experiments.h>
-#include <NNPDF/dataset.h>
-#include <NNPDF/fastkernel.h>
 #include <NNPDF/randomgenerator.h>
-
-using NNPDF::Parametrisation;
-using NNPDF::ThPredictions;
 using NNPDF::RandomGenerator;
-
-std::vector<real> CMAESMinimizer::ComputeErf(LHAPDFSet* proton, DeuteronSet* deuteron, vector<Experiment> const& exps)
-{
-  // Init PDF
-  deuteron->InitPDFSet();
-  if ( deuteron->GetMembers() != fCMAES.lambda )
-  {
-    std::cerr << "Fatal Error: There are not " << fCMAES.lambda << " mutants in the deuteronset" <<std::endl;
-    exit(-1);
-  }
-  // Calculate chi^2 and resort members after each set
-  std::vector<real> Chi2Mem(fCMAES.lambda, 0);
-  for (auto exp : exps)
-    FastAddChi2(proton, deuteron, &exp, Chi2Mem.data());
-  // Check for anomalous chi^2 values
-  for (auto Chi2 : Chi2Mem)
-    if (Chi2 >= 1E20 || std::isnan(Chi2) || std::isinf(Chi2))
-      std::cerr << "Anomalous chi^2: "<< Chi2 <<std::endl;
-  return Chi2Mem;
-}
 
 // ************************* CMA-ES MINIMIZER *****************************
 
@@ -190,18 +158,20 @@ void CMAESMinimizer::ComputeEigensystem()
     gsl_vector_free(E);
 }
 
-void CMAESMinimizer::Iterate(LHAPDFSet* proton, DeuteronSet* deuteron, gsl_vector* m, vector<Experiment> const& exps)
+void CMAESMinimizer::Iterate(gsl_vector* m, const CostComputer* cost)
 {
   // First setup the required matrices
   if (fIte++ % fCMAES.eigenInterval == 0 )
     ComputeEigensystem();
 
   // Setup and mutate PDF members
-  const vector<gsl_vector*> yvals = Mutation(deuteron, m);
+  vector<gsl_vector*> yvals;
+  vector<gsl_vector*> xvals;
+  Mutation(xvals, yvals, m);
 
   // Compute ERF and rank members
-  const vector<real> erf = ComputeErf(proton, deuteron, exps);
-  vector<real> erf_srt = erf; std::sort(erf_srt.begin(), erf_srt.end());
+  const vector<NNPDF::real> erf = (*cost)(xvals);
+  vector<NNPDF::real> erf_srt = erf; std::sort(erf_srt.begin(), erf_srt.end());
   vector<size_t> irank_map(fCMAES.lambda,0); // Weight-ordered map to members (index is i)
   for (int i=0; i<fCMAES.lambda; i++)
     irank_map[std::distance(erf_srt.begin(), std::find(erf_srt.begin(), erf_srt.end(), erf[i]))] = i;
@@ -217,22 +187,20 @@ void CMAESMinimizer::Iterate(LHAPDFSet* proton, DeuteronSet* deuteron, gsl_vecto
 
 };
 
-std::vector<gsl_vector*> CMAESMinimizer::Mutation(DeuteronSet* pdf, const gsl_vector* m) const
+void CMAESMinimizer::Mutation(std::vector<gsl_vector*>& xv, std::vector<gsl_vector*>& yv, const gsl_vector* m) const
 {
   gsl_vector* z = gsl_vector_calloc(fCMAES.n); 
-  std::vector<gsl_vector*> yvals;
   for (size_t i=0; i<fCMAES.lambda; i++)
   {
+    gsl_vector* x = gsl_vector_calloc(fCMAES.n);
     gsl_vector* y = gsl_vector_calloc(fCMAES.n);
-    gsl_vector* x = pdf->GetParameters(i); 
     gsl_vector_set_zero (z); NormVect(z);
     gsl_vector_set_zero (y); gsl_blas_dgemv (CblasNoTrans, 1.0, fBD, z, 1.0, y);
     gsl_vector_set_zero (x); gsl_vector_memcpy (x, m); gsl_blas_daxpy (fSigma, y, x);
-    yvals.push_back(y);
+    xv.push_back(x);
+    yv.push_back(y);
   }
-
   gsl_vector_free(z);
-  return yvals;
 }
 
 gsl_vector* CMAESMinimizer::Recombination(gsl_vector* m, vector<size_t> const& irank_map, std::vector<gsl_vector*> const& yvals) const

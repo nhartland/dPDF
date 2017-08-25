@@ -127,13 +127,13 @@ int main(int argc, char* argv[]) {
     std::cout << "Iteration: "<<i <<" / " <<ngen <<std::endl;
     min.Iterate(deuteron_search_centre, &training_cost);
 
-    const double trnchi2 = training_cost_centre(deuteron_search_centre)/nData_trn;
-    const double valchi2 = validation_cost_centre(deuteron_search_centre)/nData_val;
-    erf_file << i << "  " <<  trnchi2 << "  "<< valchi2<<std::endl; 
+    const double erf_training   = training_cost_centre(deuteron_search_centre)/nData_trn;
+    const double erf_validation = validation_cost_centre(deuteron_search_centre)/nData_val;
+    erf_file << i << "  " <<  erf_training << "  "<< erf_validation<<std::endl; 
 
-    if (valchi2 < erf_look_back)
+    if (erf_validation < erf_look_back)// || erf_validation < erf_training
     {
-      ite_look_back = i; erf_look_back = valchi2;
+      ite_look_back = i; erf_look_back = erf_validation;
       gsl_vector_memcpy(deuteron_look_back, deuteron_search_centre);
     }
   }

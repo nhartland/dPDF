@@ -184,6 +184,7 @@ void CMAESMinimizer::Iterate(gsl_vector* m, const CostComputer* cost)
   CSA(yavg); CMA(fIte + 1, irank_map, yvals, yavg );
 
   for (auto i : yvals ) gsl_vector_free(i);
+  for (auto i : xvals ) gsl_vector_free(i);
   gsl_vector_free(yavg);
 
 };

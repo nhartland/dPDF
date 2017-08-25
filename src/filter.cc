@@ -29,8 +29,8 @@ bool passKinCuts(libconfig::Config const& settings, NNPDF::DataSet const& set, i
 {
   if (set.GetProc(idat).compare(0,3,std::string("DYP")) == 0)
   {
-    double DYinvMassMin; settings.lookupValue("cuts.DYMassMin", DYinvMassMin);
-    double DYinvMassMax; settings.lookupValue("cuts.DYMassMax", DYinvMassMax);
+    const double DYinvMassMin = settings.lookup("cuts.DYMassMin");
+    const double DYinvMassMax = settings.lookup("cuts.DYMassMax");
     const double invM  = sqrt(set.GetKinematics(idat,1));
     return ( invM > DYinvMassMin && invM < DYinvMassMax);
   }

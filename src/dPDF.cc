@@ -174,6 +174,9 @@ int main(int argc, char* argv[]) {
 
       datafile.close();
       protonfile.close();
+
+      delete[] deuteron_theory;
+      delete[] isoproton_theory;
     }
 
   // Export best-fit parameters

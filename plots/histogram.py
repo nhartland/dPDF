@@ -15,22 +15,27 @@ class stdhist:
 		self.fig = plt.figure()
 		self.ax = plt.gca()
 
+		total_data = []
+		for set in data:
+			for point in set:
+				total_data.append(point)
+		sorted_data  = sorted(total_data)
+		n_datapoints = len(sorted_data)
+
+		# Freedman–Diaconis
+		Q1 = sorted_data[int(n_datapoints*0.25)]
+		Q3 = sorted_data[int(n_datapoints*0.75)]
+		IQR = Q3 - Q1
+		h = 2.0*IQR/pow(n_datapoints, 1.0/3.0)
+		nbins = math.ceil((max(sorted_data) - min(sorted_data))/h)	
+
 		icol = 0
 		for iset in range(0,len(data)):
-			sorted_data  = sorted(data[iset])
-			n_datapoints = len(sorted_data)
-
-			# Freedman–Diaconis
-			Q1 = sorted_data[int(n_datapoints*0.25)]
-			Q3 = sorted_data[int(n_datapoints*0.75)]
-			IQR = Q3 - Q1
-			h = 2.0*IQR/pow(n_datapoints, 1.0/3.0)
-			nbins = math.ceil((max(sorted_data) - min(sorted_data))/h)			
-			
-			self.ax.hist(sorted_data, nbins, facecolor=colours[icol], alpha=0.50, label = labels[iset])
+			self.ax.hist(data[iset], nbins, [min(sorted_data), max(sorted_data)], facecolor=colours[icol], alpha=0.50, label = labels[iset], histtype = 'stepfilled')
 			self.ax.legend()
 			self.ax.grid(True)
 			icol = icol + 1
+
 	def savePlot(self,plotname):
 		self.fig.savefig(plotname)
 
@@ -63,17 +68,3 @@ C2 = readfile(basepath + '/dat/C2.dat')
 stdhist([TL], ["Training Length"]).savePlot(basepath+"/plt/TL.pdf")
 stdhist([C2], ["$\chi^2$"]).savePlot(basepath+"/plt/C2.pdf")
 stdhist([ET,EV], ["Training", ["Validation"]]).savePlot(basepath+"/plt/ETEV.pdf")
-
-
-# datasets = []
-# setlabels = []
-# for file in sys.argv[1:]:
-# 	print("Reading "+file)
-# 	f = open(file,'r')
-# 	data = []
-# 	for line in f:
-# 		if len(line.strip()) != 0:
-# 			data.append(float(line))
-# 	datasets.append(data)
-# 	setlabels.append(basename(file))
-

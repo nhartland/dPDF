@@ -167,7 +167,7 @@ int main(int argc, char* argv[]) {
 
       for (int j=0; j<set.GetNData(); j++)
       {
-        if (replica == 0)  datafile << set.GetData(j) <<"  "<<set.GetCovMat()[j][j] <<std::endl;
+        if (replica == 0)  datafile << set.GetData(j) <<"  "<<sqrt(set.GetCovMat()[j][j])<<std::endl;
         deuteronfile << deuteron_theory[j] << std::endl;
         protonfile   << isoproton_theory[j] << std::endl;
       }

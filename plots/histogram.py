@@ -6,7 +6,7 @@ import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
 import math
 import subprocess
-
+from statistics import mean, stdev
 colours = ['red', 'blue', 'green']
 
 # Standard Data/Theory comparison
@@ -27,7 +27,7 @@ class stdhist:
 		Q3 = sorted_data[int(n_datapoints*0.75)]
 		IQR = Q3 - Q1
 		h = 2.0*IQR/pow(n_datapoints, 1.0/3.0)
-		nbins = math.ceil((max(sorted_data) - min(sorted_data))/h)	
+		nbins = 2*math.ceil((max(sorted_data) - min(sorted_data))/h)	
 
 		icol = 0
 		for iset in range(0,len(data)):
@@ -45,6 +45,14 @@ def readfile(filename):
 		lines = f.readlines()
 	return [float(e.strip()) for e in lines]
 
+def printInfo(label, data):
+	data.sort()
+	Q14 = data[int(len(data)*0.14)]
+	Q86 = data[int(len(data)*0.86)]
+	QMd = Q14 + (Q86 - Q14) / 2.0
+	print(" ***** " + label + " ***** ")
+	print("Arithmetic mean: " + str(mean(data)) + " ± " + str(stdev(data)))
+	print("       68% C.I.: " + str(QMd) + " ± " + str(Q86 - QMd))
 
 # Process set
 path = sys.argv[1]
@@ -64,6 +72,11 @@ TL = readfile(basepath + '/dat/TL.dat')
 ET = readfile(basepath + '/dat/ET.dat')
 EV = readfile(basepath + '/dat/EV.dat')
 C2 = readfile(basepath + '/dat/C2.dat')
+
+printInfo("Chi-squared", 		C2)
+printInfo("Training Error", 	ET)
+printInfo("Validation Error", 	EV)
+printInfo("Training Length", 	TL)
 
 stdhist([TL], ["Training Length"]).savePlot(basepath+"/plt/TL.pdf")
 stdhist([C2], ["$\chi^2$"]).savePlot(basepath+"/plt/C2.pdf")

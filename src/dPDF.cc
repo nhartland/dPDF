@@ -161,7 +161,12 @@ int main(int argc, char* argv[]) {
       ofstream datafile, deuteronfile, protonfile; 
 
 
-      if (replica == 0) datafile.open(base_path + "/dat/"+set.GetSetName()+".dat");
+      if (replica == 0) 
+      {
+        datafile.open(base_path + "/dat/"+set.GetSetName()+".dat");
+        set.Export(base_path + "/dat/");
+      }
+
       deuteronfile.open (base_path + "/thd/"+set.GetSetName()+"_replica_"+to_string(replica)+".dat");
       protonfile.open   (base_path + "/thp/"+set.GetSetName()+"_replica_"+to_string(replica)+".dat");
 

@@ -18,7 +18,7 @@ using std::vector;
   class DeuteronSet : public NNPDF::PDFSet
   {
   public:
-    DeuteronSet(std::vector<gsl_vector*> const& parameters, erType error = ER_NONE): // Change these to be const ref
+    DeuteronSet(std::vector<gsl_vector*> const& parameters, erType error = ER_NONE):
     PDFSet("Deuteron", parameters.size(), error),
     fParametrisation(pdf_architecture),
     fGSLWork( gsl_integration_workspace_alloc (10000) ),
@@ -46,6 +46,21 @@ using std::vector;
         nn_norm[n_activeFlavours*n + 0] = (2.0-xsng)/xglu;
         nn_norm[n_activeFlavours*n + 2] = 6.0/pval;
         if(gslerror) nn_norm[n_activeFlavours*n] = std::numeric_limits<double>::infinity(); // Integration error: set gluon norm to infty
+      }
+    };
+
+    // Copy-constructor
+    DeuteronSet(DeuteronSet const& other):
+    PDFSet(other),
+    fParametrisation(other.fParametrisation),
+    fGSLWork( gsl_integration_workspace_alloc (10000) ),
+    nn_2(other.nn_2),
+    nn_norm(other.nn_norm)
+    {
+      for (size_t n=0; n<fMembers; n++)
+      {
+        gsl_vector* newpar = gsl_vector_calloc(fParametrisation.GetNParameters());
+        gsl_vector_memcpy(newpar, other.fParameters[n]); fParameters.push_back(newpar);
       }
     };
 
@@ -89,6 +104,22 @@ using std::vector;
         os <<std::endl;
       }
     }
+
+    // static DeuteronSet ReadSet(std::string const& setname, int const& n_replicas)
+    // {
+    //     const std::string base_path = "./res/"+setname;
+    //     std::vector<gsl_vector*> fit_parameters;
+    //     for (int i=0; i<n_replicas; i++)
+    //     {
+    //       gsl_vector* parameters = gsl_vector_alloc(nparam);
+    //       FILE * f = fopen ( (base_path + "/par/parameters_" + to_string(i)+ ".dat").c_str(), "r");
+    //       assert( gsl_vector_fread (f, parameters) == 0 );
+    //       fit_parameters.push_back(parameters);
+    //     }
+
+    //     DeuteronSet set(std::vector<gsl_vector*> const& parameters, erType error = ER_NONE): // Change these to be const ref
+
+    // }
 
   private:
     NostateMLP fParametrisation;

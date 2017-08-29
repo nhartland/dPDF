@@ -27,4 +27,4 @@ NNPDF::DataSet LoadDataSet(libconfig::Setting const& set, libconfig::Config cons
 NNPDF::DataSet FilterData(NNPDF::DataSet const& set, libconfig::Config const& settings);
 
 // Function to calculate and set the t0 predictions vector in a DataSet
-void SetT0(NNPDF::DataSet& set, NNPDF::PDFSet const& pdfset);
+void SetT0(NNPDF::DataSet& set, NNPDF::PDFSet const& proton, NNPDF::PDFSet const& deuteron);

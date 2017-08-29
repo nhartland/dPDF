@@ -41,10 +41,6 @@ int main(int argc, char* argv[]) {
   std::vector<NNPDF::Experiment> experimental_data;
   ReadData(dPDFconfig, experimental_data);
 
-  double nData = 0;
-  for (auto exp: experimental_data)
-    nData += exp.GetNData();
-
   // Read fit parameters
   std::vector<gsl_vector*> fit_parameters;
   for (int i=0; i<n_replicas; i++)

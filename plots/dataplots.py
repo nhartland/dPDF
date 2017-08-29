@@ -12,12 +12,6 @@ colours = ['red', 'blue', 'green']
 sets = ['BCDMSD', 'SLACD', 'DYE886R', 'NMCPD']
 # sets = ['DYE886R']
 
-def process_theory(basepath):
-	with open(filename, 'r') as f:
-		lines = f.readlines()
-	return [float(e.strip()) for e in lines]
-
-
 # Process set
 path = sys.argv[1]
 basepath = basename(path)

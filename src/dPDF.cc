@@ -129,7 +129,7 @@ int main(int argc, char* argv[]) {
     const double erf_validation = validation_cost_centre(deuteron_search_centre)/nData_val;
     erf_file << i << "  " <<  erf_training << "  "<< erf_validation<<std::endl; 
 
-    if (erf_validation < erf_look_back)// || erf_validation < erf_training
+    if (erf_validation < erf_look_back || erf_validation < erf_training )
     {
       ite_look_back = i; erf_look_back = erf_validation;
       gsl_vector_memcpy(deuteron_look_back, deuteron_search_centre);

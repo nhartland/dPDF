@@ -19,6 +19,10 @@ LHAPDFINCS = -I$(shell lhapdf-config --prefix)/include
 LHAPDFDIR  = $(shell lhapdf-config --prefix)/lib
 LHAPDFLIBS = -L$(LHAPDFDIR) -lLHAPDF
 
+# APFEL
+APFELINCS = $(shell apfel-config --cppflags) 
+APFELLIBS = $(shell apfel-config --ldflags) 
+
 # libnnpdf
 NNPDFINCLUDE= $(shell nnpdf-config --cppflags)
 NNPDFLIBS= $(shell nnpdf-config --ldflags)
@@ -32,7 +36,7 @@ GSLINCLUDE=$(shell gsl-config --cflags)
 GSLLIBS=$(shell gsl-config --libs)
 
 # additional libraries to be included 
-PRJLDFLAGS = $(LHAPDFLIBS) $(APPLCLIBS) $(ROOTLIBS) $(APFELLIBS) $(NNPDFLIBS) $(GSLLIBS) $(CONFIGLIBS) -lsqlite3
+PRJLDFLAGS = $(LHAPDFLIBS) $(APPLCLIBS) $(ROOTLIBS) $(APFELLIBS) $(NNPDFLIBS) $(GSLLIBS) $(CONFIGLIBS) $(APFELLIBS) -lsqlite3
 
 # scheduling and optimization options (such as -DSSE -DSSE2 -DP4)
-PRJCXXFLAGS = -Wall -O3 -std=c++11 $(ALLDIR) $(LHAPDFINCS) $(NNPDFINCLUDE) $(GSLINCLUDE) $(CONFIGINCLUDE) -I./inc
+PRJCXXFLAGS = -Wall -O3 -std=c++11 $(ALLDIR) $(LHAPDFINCS) $(NNPDFINCLUDE) $(GSLINCLUDE) $(CONFIGINCLUDE) $(APFELINCS)-I./inc

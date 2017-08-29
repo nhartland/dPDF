@@ -1,6 +1,7 @@
 // Multi-beam test
 
 #include "LHAPDF/LHAPDF.h"
+#include "APFEL/APFEL.h"
 
 // Configuration file
 #include <libconfig.h++>
@@ -18,6 +19,22 @@
 
 using namespace Colour;
 using namespace std;
+
+// External PDF set
+PDFSet* APFELSet = 0;
+extern "C" void externalsetapfel_(double const& x, double const& Q, double *pdf)
+{
+  NNPDF::real* EVLN = new NNPDF::real[14];
+  NNPDF::real* LHA = new NNPDF::real[14];
+  APFELSet->GetPDF(x, Q*Q, 0, EVLN);
+  NNPDF::PDFSet::EVLN2LHA(EVLN, LHA);
+
+  for (int i=0; i<13; i++)
+    pdf[i] = LHA[i];
+
+  delete[] EVLN;
+  delete[] LHA;
+}
 
 int main(int argc, char* argv[]) {
   LHAPDF::setVerbosity(0);

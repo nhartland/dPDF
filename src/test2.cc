@@ -22,7 +22,8 @@ int main(int argc, char* argv[]) {
   const int nparam   = NostateMLP::get_nparam(pdf_architecture);
 
   // Read example parameters
-  const std::string base_path = "./res/base_parameters_40_hidden";
+  const std::string setname = "base_parameters_40_hidden";
+  const std::string base_path = "./res/" + setname;
   std::vector<gsl_vector*> test_parameters;
   for (int i=0; i<nreplica; i++)
   {
@@ -35,12 +36,17 @@ int main(int argc, char* argv[]) {
   // Construct a deuteronset from examples, and test copy constructor
   DeuteronSet    test_set(test_parameters, NNPDF::PDFSet::ER_MC);
   DeuteronSet    copy_set(test_set);
+  DeuteronSet    read_set = DeuteronSet::ReadSet(setname, nreplica);
 
   NNPDF::FKTable test_table("./theory_65/FK_DYE886R_D.dat");
   NNPDF::ThPredictions test_pred(&test_set, &test_table);
   NNPDF::ThPredictions copy_pred(&copy_set, &test_table);
-  NNPDF::ThPredictions ratio_pred = test_pred / copy_pred;
-  ratio_pred.Print(std::cout);
+  NNPDF::ThPredictions read_pred(&read_set, &test_table);
+
+  NNPDF::ThPredictions ratio_copy = test_pred / copy_pred;
+  NNPDF::ThPredictions ratio_read = test_pred / read_pred;
+  ratio_copy.Print(std::cout);
+  ratio_read.Print(std::cout);
 
   exit(0);
 }

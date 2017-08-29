@@ -105,21 +105,24 @@ using std::vector;
       }
     }
 
-    // static DeuteronSet ReadSet(std::string const& setname, int const& n_replicas)
-    // {
-    //     const std::string base_path = "./res/"+setname;
-    //     std::vector<gsl_vector*> fit_parameters;
-    //     for (int i=0; i<n_replicas; i++)
-    //     {
-    //       gsl_vector* parameters = gsl_vector_alloc(nparam);
-    //       FILE * f = fopen ( (base_path + "/par/parameters_" + to_string(i)+ ".dat").c_str(), "r");
-    //       assert( gsl_vector_fread (f, parameters) == 0 );
-    //       fit_parameters.push_back(parameters);
-    //     }
+    // Read a set of deuteron fit parameters from file
+    static DeuteronSet ReadSet(std::string const& setname, int const& n_replicas)
+    {
+        const int nparam = NostateMLP::get_nparam(pdf_architecture);
+        const std::string base_path = "./res/"+setname;
+        std::vector<gsl_vector*> fit_parameters;
+        for (int i=0; i<n_replicas; i++)
+        {
+          gsl_vector* parameters = gsl_vector_alloc(nparam);
+          FILE * f = fopen ( (base_path + "/par/parameters_" + std::to_string(i)+ ".dat").c_str(), "r");
+          assert( gsl_vector_fread (f, parameters) == 0 );
+          fit_parameters.push_back(parameters);
+        }
 
-    //     DeuteronSet set(std::vector<gsl_vector*> const& parameters, erType error = ER_NONE): // Change these to be const ref
-
-    // }
+        DeuteronSet set(fit_parameters, NNPDF::PDFSet::ER_MC);
+        for (auto ipar : fit_parameters) gsl_vector_free(ipar);
+        return set;
+    }
 
   private:
     NostateMLP fParametrisation;

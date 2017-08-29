@@ -41,18 +41,22 @@ int main(int argc, char* argv[]) {
   std::vector<NNPDF::Experiment> experimental_data;
   ReadData(dPDFconfig, experimental_data);
 
-  // Read fit parameters
-  std::vector<gsl_vector*> fit_parameters;
-  for (int i=0; i<n_replicas; i++)
-  {
-    gsl_vector* parameters = gsl_vector_alloc(nparam);
-    FILE * f = fopen ( (base_path + "/par/parameters_" + to_string(i)+ ".dat").c_str(), "r");
-    assert( gsl_vector_fread (f, parameters) == 0 );
-    fit_parameters.push_back(parameters);
-  }
-
   LHAPDFSet   proton(dPDFconfig.lookup("fit.proton"), NNPDF::PDFSet::ER_MC);
-  DeuteronSet deuteron(fit_parameters, NNPDF::PDFSet::ER_MC);
+  DeuteronSet deuteron = DeuteronSet::ReadSet(fitname, n_replicas);
+
+  for (auto exp : experimental_data)
+    for (int i=0; i<exp.GetNSet(); i++)
+    {
+      NNPDF::DataSet const& set = exp.GetSet(i);
+      NNPDF::real* predictions = new NNPDF::real[n_replicas*set.GetNData()];
+      ComputePredictions(&proton, &deuteron, &set, predictions);
+      NNPDF::ThPredictions dpred(&deuteron, &set, predictions);
+
+      ofstream deuteronfile;
+      std::cout << "Writing to " << base_path + "/thd/TH_"+set.GetSetName()+".dat" <<std::endl;
+      deuteronfile.open (base_path + "/thd/TH_"+set.GetSetName()+".dat");
+      dpred.Print(deuteronfile); deuteronfile.close();
+    }
 
   exit(0);
 }

@@ -4,7 +4,7 @@ CXXFLAGS = 	$(PRJCXXFLAGS)
 LDLIBS   =  $(PRJLDFLAGS)
 
 VPATH=./src
-MAIN = dPDF plotter
+MAIN = dPDF compute_f2 compute_th
 TEST = test1 test2
 #ftdy_hcx
 
@@ -14,7 +14,8 @@ all: $(MAIN)
 test: $(TEST)
 
 dPDF: dPDF.o filter.o cmaes.o ns_network.o fastaddchi2.o
-plotter: plotter.o filter.o ns_network.o fastaddchi2.o
+compute_th: compute_th.o filter.o ns_network.o fastaddchi2.o
+compute_f2: compute_f2.o filter.o ns_network.o fastaddchi2.o
 
 test1: test1.o
 test2: test2.o ns_network.o

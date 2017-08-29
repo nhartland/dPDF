@@ -21,6 +21,7 @@ int main(int argc, char* argv[]) {
   const int nreplica = 100;
   const int nparam   = NostateMLP::get_nparam(pdf_architecture);
 
+  // Read example parameters
   const std::string base_path = "./res/base_parameters_40_hidden";
   std::vector<gsl_vector*> test_parameters;
   for (int i=0; i<nreplica; i++)
@@ -31,6 +32,7 @@ int main(int argc, char* argv[]) {
     test_parameters.push_back(parameters);
   }
 
+  // Construct a deuteronset from examples, and test copy constructor
   DeuteronSet    test_set(test_parameters, NNPDF::PDFSet::ER_MC);
   DeuteronSet    copy_set(test_set);
 

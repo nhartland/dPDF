@@ -57,8 +57,6 @@ int main(int argc, char* argv[]) {
     mkdir(base_path.c_str(), 0777);
     mkdir((base_path+"/par").c_str(), 0777);
     mkdir((base_path+"/erf").c_str(), 0777);
-    mkdir((base_path+"/thp").c_str(), 0777);
-    mkdir((base_path+"/thd").c_str(), 0777);
     mkdir((base_path+"/dat").c_str(), 0777);
     mkdir((base_path+"/dat/systypes").c_str(), 0777);
   }
@@ -143,46 +141,6 @@ int main(int argc, char* argv[]) {
   const double glbchi2 = ErfComputer(bpPDF, experimental_data)(deuteron_look_back)/(nData_val + nData_trn);
   erf_file << ite_look_back << "  " <<  trnchi2 << "  "<< valchi2<<"  "<<glbchi2<<std::endl; 
   erf_file.close();
-
-  // // Export theoretical predictions
-  std::vector<gsl_vector*> final_vec = {deuteron_look_back};
-  DeuteronSet  deuteron(final_vec);
-  IsoProtonSet isoproton(dPDFconfig.lookup("fit.proton"), replica+1);
-  for (auto exp : experimental_data)
-    for (int i=0; i<exp.GetNSet(); i++)
-    {
-      NNPDF::DataSet const& set = exp.GetSet(i);
-
-      NNPDF::real* deuteron_theory = new NNPDF::real[set.GetNData()];
-      ComputePredictions(&bpPDF, &deuteron, &set, deuteron_theory);
-      NNPDF::real* isoproton_theory = new NNPDF::real[set.GetNData()];
-      ComputePredictions(&bpPDF, &isoproton, &set, isoproton_theory);
-
-      ofstream datafile, deuteronfile, protonfile; 
-
-
-      if (replica == 0) 
-      {
-        datafile.open(base_path + "/dat/"+set.GetSetName()+".dat");
-        set.Export(base_path + "/dat/");
-      }
-
-      deuteronfile.open (base_path + "/thd/"+set.GetSetName()+"_replica_"+to_string(replica)+".dat");
-      protonfile.open   (base_path + "/thp/"+set.GetSetName()+"_replica_"+to_string(replica)+".dat");
-
-      for (int j=0; j<set.GetNData(); j++)
-      {
-        if (replica == 0)  datafile << set.GetData(j) <<"  "<<sqrt(set.GetCovMat()[j][j])<<std::endl;
-        deuteronfile << deuteron_theory[j] << std::endl;
-        protonfile   << isoproton_theory[j] << std::endl;
-      }
-
-      datafile.close();
-      protonfile.close();
-
-      delete[] deuteron_theory;
-      delete[] isoproton_theory;
-    }
 
   // Export best-fit parameters
   FILE * f = fopen ( (base_path + "/par/parameters_" + to_string(replica)+".dat").c_str(), "w");

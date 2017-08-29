@@ -3,6 +3,7 @@
 #include "filter.h"
 #include "colour.h"
 #include "fastaddchi2.h"
+#include "deuteronset.h"
 
 #include <NNPDF/fastkernel.h>
 #include <NNPDF/pdfset.h>
@@ -61,7 +62,8 @@ void ReadData(libconfig::Config const& settings, std::vector<NNPDF::Experiment>&
 
   // Read T0 PDF set
   libconfig::Setting& fitsettings = settings.lookup("fit");
-  NNPDF::LHAPDFSet t0set_proton(fitsettings["proton"],  NNPDF::LHAPDFSet::ER_MCT0);
+  NNPDF::LHAPDFSet t0set_proton(fitsettings["proton"],  NNPDF::LHAPDFSet::ER_MC);
+  DeuteronSet      t0set_deuteron = DeuteronSet::ReadSet(fitsettings["t0set"], t0set_proton.GetMembers());
 
   NNPDF::PDFSet::Verbose = vb;
 
@@ -92,7 +94,7 @@ void ReadData(libconfig::Config const& settings, std::vector<NNPDF::Experiment>&
 
     NNPDF::DataSet dset = LoadDataSet(set, settings);
     NNPDF::DataSet fset = FilterData(dset, settings);
-    SetT0(fset, t0set_proton, t0set_proton);
+    SetT0(fset, t0set_proton, t0set_deuteron);
 
     cout << setw(20) << left << setname << "  "
          << setw(10) << left << systype << "   "

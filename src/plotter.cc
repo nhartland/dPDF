@@ -37,25 +37,37 @@ int main(int argc, char* argv[]) {
   const int n_replicas = dPDFconfig.lookup("fit.nrep");
   const int nparam = NostateMLP::get_nparam(pdf_architecture);
 
+  // Make directories
+  mkdir((base_path+"/thp").c_str(), 0777);
+  mkdir((base_path+"/thd").c_str(), 0777);
+
   // Initialise and filter datasets
   std::vector<NNPDF::Experiment> experimental_data;
   ReadData(dPDFconfig, experimental_data);
 
   LHAPDFSet   proton(dPDFconfig.lookup("fit.proton"), NNPDF::PDFSet::ER_MC);
+  IsoProtonSet isoproton(dPDFconfig.lookup("fit.proton"), NNPDF::PDFSet::ER_MC);
   DeuteronSet deuteron = DeuteronSet::ReadSet(fitname, n_replicas);
+
+  std::array<NNPDF::PDFSet*,2> deuterons = {&deuteron, &isoproton};
+  std::array<std::string,2>    labels    = {"thd", "thp"};
 
   for (auto exp : experimental_data)
     for (int i=0; i<exp.GetNSet(); i++)
     {
       NNPDF::DataSet const& set = exp.GetSet(i);
-      NNPDF::real* predictions = new NNPDF::real[n_replicas*set.GetNData()];
-      ComputePredictions(&proton, &deuteron, &set, predictions);
-      NNPDF::ThPredictions dpred(&deuteron, &set, predictions);
+      for (int j=0; j<deuterons.size(); j++)
+      {
+        NNPDF::real* predictions = new NNPDF::real[n_replicas*set.GetNData()];
+        ComputePredictions(&proton, deuterons[j], &set, predictions);
+        NNPDF::ThPredictions pred(deuterons[j], &set, predictions);
+        delete[] predictions;
 
-      ofstream deuteronfile;
-      std::cout << "Writing to " << base_path + "/thd/TH_"+set.GetSetName()+".dat" <<std::endl;
-      deuteronfile.open (base_path + "/thd/TH_"+set.GetSetName()+".dat");
-      dpred.Print(deuteronfile); deuteronfile.close();
+        ofstream file;
+        std::cout << "Writing to " << base_path + "/"+labels[j]+"/TH_"+set.GetSetName()+".dat" <<std::endl;
+        file.open (base_path + "/"+labels[j]+"/TH_"+set.GetSetName()+".dat" );
+        pred.Print(file); file.close();
+      }
     }
 
   exit(0);

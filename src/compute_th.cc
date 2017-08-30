@@ -38,6 +38,8 @@ int main(int argc, char* argv[]) {
   const int nparam = NostateMLP::get_nparam(pdf_architecture);
 
   // Make directories
+  mkdir((base_path+"/dat").c_str(), 0777);
+  mkdir((base_path+"/dat/systypes").c_str(), 0777);
   mkdir((base_path+"/thp").c_str(), 0777);
   mkdir((base_path+"/thd").c_str(), 0777);
 
@@ -56,6 +58,7 @@ int main(int argc, char* argv[]) {
     for (int i=0; i<exp.GetNSet(); i++)
     {
       NNPDF::DataSet const& set = exp.GetSet(i);
+      set.Export(base_path + "/dat/");
       for (int j=0; j<deuterons.size(); j++)
       {
         NNPDF::real* predictions = new NNPDF::real[n_replicas*set.GetNData()];

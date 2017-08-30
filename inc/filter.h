@@ -10,6 +10,7 @@
 
 
 // Initialise nPDF datasets
+void ReadPlots(libconfig::Config const& settings, std::vector<NNPDF::FKSet>& plots);
 void ReadData(libconfig::Config const& settings, std::vector<NNPDF::Experiment>&);
 void InitData(libconfig::Config const& settings, std::vector<NNPDF::Experiment>, std::vector<NNPDF::Experiment>&, std::vector<NNPDF::Experiment>&);
 

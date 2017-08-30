@@ -1,7 +1,6 @@
 // Multi-beam test
 
 #include "LHAPDF/LHAPDF.h"
-#include "APFEL/APFEL.h"
 
 // Configuration file
 #include <libconfig.h++>
@@ -20,29 +19,13 @@
 using namespace Colour;
 using namespace std;
 
-// External PDF set
-PDFSet* APFELSet = 0;
-extern "C" void externalsetapfel_(double const& x, double const& Q, double *pdf)
-{
-  NNPDF::real* EVLN = new NNPDF::real[14];
-  NNPDF::real* LHA = new NNPDF::real[14];
-  APFELSet->GetPDF(x, Q*Q, 0, EVLN);
-  NNPDF::PDFSet::EVLN2LHA(EVLN, LHA);
-
-  for (int i=0; i<13; i++)
-    pdf[i] = LHA[i];
-
-  delete[] EVLN;
-  delete[] LHA;
-}
-
 int main(int argc, char* argv[]) {
   LHAPDF::setVerbosity(0);
   NNPDF::SetVerbosity(0);
 
   if (argc < 2)
   {
-    cerr << "Usage: compute_f2 <configuration file>"<<std::endl;
+    cerr << "Usage: compute_th <configuration file>"<<std::endl;
     exit(-1);
   }
   // Read configuration file
@@ -52,25 +35,35 @@ int main(int argc, char* argv[]) {
   const std::string fitname = dPDFconfig.lookup("fit.name");
   const std::string base_path = "./res/"+fitname;
   const int n_replicas = dPDFconfig.lookup("fit.nrep");
-  const int nparam = NostateMLP::get_nparam(pdf_architecture);
 
   // Make directories
-  mkdir((base_path+"/f2r").c_str(), 0777);
+  mkdir((base_path+"/thr").c_str(), 0777);
+
+  // Initialise and filter datasets
+  std::vector<NNPDF::FKSet> plot_data;
+  ReadPlots(dPDFconfig, plot_data);
 
   LHAPDFSet   proton(dPDFconfig.lookup("fit.proton"), NNPDF::PDFSet::ER_MC);
   IsoProtonSet isoproton(dPDFconfig.lookup("fit.proton"), NNPDF::PDFSet::ER_MC);
   DeuteronSet deuteron = DeuteronSet::ReadSet(fitname, n_replicas);
 
-  // Initial and final scales
-  const double Q0 = 1;
-  const double Q  = 100;
+  for (auto set : plot_data)
+  {
+      NNPDF::real* predictions = new NNPDF::real[n_replicas*set.GetNDataFK()];
+      ComputePredictions(&proton, &deuteron, &set, predictions);
+      NNPDF::ThPredictions d_pred(&deuteron, &set, predictions);
 
-  // Initialize APFEL
-  APFELSet = &deuteron;
-  APFEL::SetPDFSet("external");  // If you comment out this line you should get the same result.
-  APFEL::InitializeAPFEL_DIS();
-  APFEL::EvolveAPFEL(Q0,Q);
+      ComputePredictions(&proton, &isoproton, &set, predictions);
+      NNPDF::ThPredictions p_pred(&isoproton, &set, predictions);
+      delete[] predictions;
+
+      NNPDF::ThPredictions c_pred = d_pred / p_pred;
+
+      ofstream file;
+      std::cout << "Writing to " << base_path + "/thr/TH_"+set.GetDataName()+".dat" <<std::endl;
+      file.open (base_path + "/thr/TH_"+set.GetDataName()+".dat" );
+      c_pred.Print(file); file.close();
+    }
 
   exit(0);
 }
-

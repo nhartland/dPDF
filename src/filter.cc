@@ -49,6 +49,23 @@ bool passKinCuts(libconfig::Config const& settings, NNPDF::DataSet const& set, i
   return true;
 }
 
+// Reads plot data
+void ReadPlots(libconfig::Config const& settings, std::vector<NNPDF::FKSet>& plots)
+{
+  const std::array<std::string,4> plotsets = {"F2R1", "F2R10", "F2R100", "F2R1000"};
+  const int theoryIndex = settings.lookup("qcd.THID");
+  NNPDF::SigmaOp FKOperator = NNPDF::FKSet::parseOperator("NULL");
+  for (auto setname : plotsets)
+  {
+    std::vector<NNPDF::FKTable*> fkTables;
+    fkTables.push_back(new NNPDF::FKTable("theory_"+std::to_string(theoryIndex)+"/FK_"+setname+".dat", std::vector<std::string>()));
+    fkTables.push_back(new NNPDF::FKTable("theory_"+std::to_string(theoryIndex)+"/FK_"+setname+".dat", std::vector<std::string>()));
+    plots.emplace_back(FKOperator, fkTables);
+    plots.back().SetDataName(setname);
+    std::cout << "Plotting: " << plots.back().GetDataName() <<std::endl;
+  }
+}
+
 // Initialises all datasets
 void ReadData(libconfig::Config const& settings, std::vector<NNPDF::Experiment>& outexp)
 {

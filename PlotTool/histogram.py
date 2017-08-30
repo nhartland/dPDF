@@ -27,8 +27,8 @@ class stdhist:
 		Q3 = sorted_data[int(n_datapoints*0.75)]
 		IQR = Q3 - Q1
 		h = 2.0*IQR/pow(n_datapoints, 1.0/3.0)
-		nbins = 2*math.ceil((max(sorted_data) - min(sorted_data))/h)	
-
+		nbins = math.ceil((max(sorted_data) - min(sorted_data))/h)	
+		nbins = max(10, nbins)
 		icol = 0
 		for iset in range(0,len(data)):
 			self.ax.hist(data[iset], nbins, [min(sorted_data), max(sorted_data)], facecolor=colours[icol], alpha=0.50, label = labels[iset], histtype = 'stepfilled')
@@ -56,28 +56,23 @@ def printInfo(label, data):
 
 # Process set
 path = sys.argv[1]
-basepath = basename(path)
-
-os.system('rm -rf ./' + basepath)
-os.mkdir(basepath) 
-os.mkdir(basepath+'/dat/')
-os.mkdir(basepath+'/plt/')
+if not os.path.exists(path + "/figures"): os.mkdir(path + "/figures") 
 basecmd = 'tail -qn1 '+ path + '/erf/replica_*.dat'
-os.system(basecmd + '| awk \'{print $1}\' > ./' + basepath + '/dat/TL.dat')
-os.system(basecmd + '| awk \'{print $2}\' > ./' + basepath + '/dat/ET.dat')
-os.system(basecmd + '| awk \'{print $3}\' > ./' + basepath + '/dat/EV.dat')
-os.system(basecmd + '| awk \'{print $4}\' > ./' + basepath + '/dat/C2.dat')
+os.system(basecmd + '| awk \'{print $1}\' > ' + path + '/erf/TL.dat')
+os.system(basecmd + '| awk \'{print $2}\' > ' + path + '/erf/ET.dat')
+os.system(basecmd + '| awk \'{print $3}\' > ' + path + '/erf/EV.dat')
+os.system(basecmd + '| awk \'{print $4}\' > ' + path + '/erf/C2.dat')
 
-TL = readfile(basepath + '/dat/TL.dat')
-ET = readfile(basepath + '/dat/ET.dat')
-EV = readfile(basepath + '/dat/EV.dat')
-C2 = readfile(basepath + '/dat/C2.dat')
+TL = readfile(path + '/erf/TL.dat')
+ET = readfile(path + '/erf/ET.dat')
+EV = readfile(path + '/erf/EV.dat')
+C2 = readfile(path + '/erf/C2.dat')
 
 printInfo("Chi-squared", 		C2)
 printInfo("Training Error", 	ET)
 printInfo("Validation Error", 	EV)
 printInfo("Training Length", 	TL)
 
-stdhist([TL], ["Training Length"]).savePlot(basepath+"/plt/TL.pdf")
-stdhist([C2], ["$\chi^2$"]).savePlot(basepath+"/plt/C2.pdf")
-stdhist([ET,EV], ["Training", ["Validation"]]).savePlot(basepath+"/plt/ETEV.pdf")
+stdhist([TL], ["Training Length"]).savePlot(path+"/figures/TL.pdf")
+stdhist([C2], ["$\chi^2$"]).savePlot(path+"/figures/C2.pdf")
+stdhist([ET,EV], ["Training", ["Validation"]]).savePlot(path+"/figures/ETEV.pdf")

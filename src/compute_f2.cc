@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
   std::vector<NNPDF::FKSet> plot_data;
   ReadPlots(dPDFconfig, plot_data);
 
-  LHAPDFSet   proton(dPDFconfig.lookup("fit.proton"), NNPDF::PDFSet::ER_MC);
+  LHAPDFSet    proton(dPDFconfig.lookup("fit.proton"), NNPDF::PDFSet::ER_MC);
   IsoProtonSet isoproton(dPDFconfig.lookup("fit.proton"), NNPDF::PDFSet::ER_MC);
   DeuteronSet deuteron = DeuteronSet::ReadSet(fitname, n_replicas);
 

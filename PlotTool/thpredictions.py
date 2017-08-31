@@ -7,7 +7,7 @@ class ThPredictions:
 
     # Verify path
     if os.path.exists(source) == False:
-      print("Error: source file" + source + " not found!")
+      print("Error: source file " + source + " not found!")
       sys.exit()
 
     # Open commondata

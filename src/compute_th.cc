@@ -35,7 +35,6 @@ int main(int argc, char* argv[]) {
   const std::string fitname = dPDFconfig.lookup("fit.name");
   const std::string base_path = "./res/"+fitname;
   const int n_replicas = dPDFconfig.lookup("fit.nrep");
-  const int nparam = NostateMLP::get_nparam(pdf_architecture);
 
   // Make directories
   mkdir((base_path+"/dat").c_str(), 0777);
@@ -47,9 +46,9 @@ int main(int argc, char* argv[]) {
   std::vector<NNPDF::Experiment> experimental_data;
   ReadData(dPDFconfig, experimental_data);
 
-  LHAPDFSet   proton(dPDFconfig.lookup("fit.proton"), NNPDF::PDFSet::ER_MC);
+  LHAPDFSet    proton(dPDFconfig.lookup("fit.proton"), NNPDF::PDFSet::ER_MC);
   IsoProtonSet isoproton(dPDFconfig.lookup("fit.proton"), NNPDF::PDFSet::ER_MC);
-  DeuteronSet deuteron = DeuteronSet::ReadSet(fitname, n_replicas);
+  DeuteronSet  deuteron = DeuteronSet::ReadSet(fitname, n_replicas);
 
   std::array<NNPDF::PDFSet*,2> deuterons = {&deuteron, &isoproton};
   std::array<std::string,2>    labels    = {"thd", "thp"};

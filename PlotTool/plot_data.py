@@ -1,10 +1,7 @@
 #!/usr/bin/python
 # nnpydf - nh 08/14
-
-import sys, os, gc, shutil
-import numpy as np
+import os, shutil
 #nnpydf imports
-import commondata, datplot
 from thpredictions import ThPredictions
 from commondata import CommonData
 from datplot import *
@@ -17,8 +14,8 @@ def genPlotPage(prefix, dataset, cData, theories):
   print("Generating plots for: " + dataset)
 
   # Make folder
-  os.mkdir(prefix)
-  
+  if not os.path.exists(prefix):
+    os.mkdir(prefix)  
   dataPlots = []
   
   # No kinematics, and DIS plots
@@ -43,24 +40,21 @@ def genPlotPage(prefix, dataset, cData, theories):
 #################################################################################################################################
 
 # Fetch datasets
-root = "../res/base_parameters_40_hidden/"
-root = "../res/dPDF-TEST1/"
+root = sys.argv[1]
 datroot = root + "dat/"
 throot  = root + "thd/"
 prroot  = root + "thp/"
 
 # Make dir for results
 plotDir = root + "figures/"
-if os.path.exists(plotDir):
-  shutil.rmtree(plotDir)
-os.mkdir(plotDir)
+if not os.path.exists(plotDir):
+  os.mkdir(plotDir)
 
 cData = []
 for dataset in os.listdir(datroot):
   if dataset[0:4] == "DATA":
     cData.append(CommonData(datroot+dataset))
 
-# Setup thread pool
 for cDat in cData:
   prefix = plotDir + cDat.setname + "/"
   deuteron  = ThPredictions(throot + "TH_" + cDat.setname + ".dat") 

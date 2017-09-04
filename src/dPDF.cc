@@ -57,8 +57,6 @@ int main(int argc, char* argv[]) {
     mkdir(base_path.c_str(), 0777);
     mkdir((base_path+"/par").c_str(), 0777);
     mkdir((base_path+"/erf").c_str(), 0777);
-    mkdir((base_path+"/dat").c_str(), 0777);
-    mkdir((base_path+"/dat/systypes").c_str(), 0777);
   }
 
   cout << FG_YELLOW << "---------------------------------------------------------------------"<<FG_DEFAULT <<endl;

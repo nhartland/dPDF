@@ -43,17 +43,16 @@ int main(int argc, char* argv[]) {
   std::vector<NNPDF::FKSet> plot_data;
   ReadPlots(dPDFconfig, plot_data);
 
-  LHAPDFSet    proton(dPDFconfig.lookup("fit.proton"), NNPDF::PDFSet::ER_MC);
-  IsoProtonSet isoproton(dPDFconfig.lookup("fit.proton"), NNPDF::PDFSet::ER_MC);
-  DeuteronSet deuteron = DeuteronSet::ReadSet(fitname, n_replicas);
-
+  // IsoProtonSet isoproton(dPDFconfig.lookup("fit.proton"), NNPDF::PDFSet::ER_MC);
+  DeuteronSet  deuteron = DeuteronSet::ReadSet(fitname, n_replicas);
+  IsoProtonSet isoproton("NNPDF30_nnlo_as_0118_hera", NNPDF::PDFSet::ER_MC);
   for (auto set : plot_data)
   {
       NNPDF::real* predictions = new NNPDF::real[n_replicas*set.GetNDataFK()];
-      ComputePredictions(&proton, &deuteron, &set, predictions);
+      ComputePredictions(0, &deuteron, &set, predictions);
       NNPDF::ThPredictions d_pred(&deuteron, &set, predictions);
 
-      ComputePredictions(&proton, &isoproton, &set, predictions);
+      ComputePredictions(0, &isoproton, &set, predictions);
       NNPDF::ThPredictions p_pred(&isoproton, &set, predictions);
       delete[] predictions;
 

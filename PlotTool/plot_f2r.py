@@ -18,10 +18,10 @@ xmax = 0.8
 xch  = 0.1
 
 labels = {
-  "F2R1":"F$^2_R$ (1 GeV$^2$)",
-  "F2R10":"F$^2_R$ (10 GeV$^2$)",
-  "F2R100":"F$^2_R$ (100 GeV$^2$)",
-  "F2R1000":"F$^2_R$ (1000 GeV$^2$)"
+  "F2R1":"$c(x)$ (1 GeV$^2$)",
+  "F2R10":"$c(x)$ (10 GeV$^2$)",
+  "F2R100":"$c(x)$ (100 GeV$^2$)",
+  "F2R1000":"$c(x)$ (1000 GeV$^2$)"
 }
 
 def compute_MMHT(xvals):
@@ -69,8 +69,9 @@ def cx_plot(prefix, cData, theories):
   lax.set_xscale('log')
   ax.xaxis.set_major_locator(MaxNLocator(5,prune='lower'))
 
-  ax.set_xlabel("x")
-  lax.set_xlabel("x")
+  ax.set_xlabel("$x$")
+  lax.set_xlabel("$x$")
+  lax.set_ylabel("$F^2_D / (F^2_n + F^2_p)$")
 
   for theory in theories:
     CVup = list(map(add, theory.CV, theory.error))

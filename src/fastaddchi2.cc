@@ -19,10 +19,10 @@ const std::map<std::string, process_type> process_map = {{"BCDMSD", F2},
                                                          {"SLACD", F2}, 
                                                          {"NMCPD", F2R}, 
                                                          {"DYE886R", DYR},
-                                                         {"F2R1", F2R},
-                                                         {"F2R10", F2R},
-                                                         {"F2R100", F2R},
-                                                         {"F2R1000", F2R}
+                                                         {"F2R1", F2},
+                                                         {"F2R10", F2},
+                                                         {"F2R100", F2},
+                                                         {"F2R1000", F2}
                                                        };
 void ComputePredictions(const PDFSet* proton, const PDFSet* deuteron, const FKSet* fkset, real * theory)
 {

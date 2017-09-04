@@ -22,7 +22,7 @@ using std::vector;
     PDFSet("Deuteron", parameters.size(), error),
     fParametrisation(pdf_architecture),
     fGSLWork( gsl_integration_workspace_alloc (10000) ),
-    nn_2(fMembers*n_activeFlavours,0),
+    nn_1(fMembers*n_activeFlavours,0),
     nn_norm(fMembers*n_activeFlavours,1)
     {
       for (size_t n=0; n<fMembers; n++)
@@ -33,17 +33,17 @@ using std::vector;
 
         // Compute large-x preprocessing
         std::array<NNPDF::real, 14> pdf;
-        GetPDF(2.0,1,n, &pdf[0]); // Evaluate NN(2)
+        GetPDF(1.0,1,n, &pdf[0]); // Evaluate NN(1)
         for (int ifl=0; ifl<n_activeFlavours; ifl++)
-          nn_2[n_activeFlavours*n + ifl] = pdf[activeFlavours[ifl]];
+          nn_1[n_activeFlavours*n + ifl] = pdf[activeFlavours[ifl]];
         GetPDF(0,1,n, &pdf[0]); // Evaluate NN(0)
 
         // Compute sum rules
         bool gslerror = false;
-        const double pval = IntegratePDF(n,3,1,PDFSet::FX,gslerror,fGSLWork, 0.0, 2.0);
-        const double xsng = IntegratePDF(n,1,1,PDFSet::XFX,gslerror,fGSLWork, 0.0, 2.0);
-        const double xglu = IntegratePDF(n,2,1,PDFSet::XFX,gslerror,fGSLWork, 0.0, 2.0);
-        nn_norm[n_activeFlavours*n + 0] = (2.0-xsng)/xglu;
+        const double pval = IntegratePDF(n,3,1,PDFSet::FX,gslerror,fGSLWork, 0.0, 1.0);
+        const double xsng = IntegratePDF(n,1,1,PDFSet::XFX,gslerror,fGSLWork, 0.0, 1.0);
+        const double xglu = IntegratePDF(n,2,1,PDFSet::XFX,gslerror,fGSLWork, 0.0, 1.0);
+        nn_norm[n_activeFlavours*n + 0] = (1.0-xsng)/xglu;
         nn_norm[n_activeFlavours*n + 2] = 6.0/pval;
         if(gslerror) nn_norm[n_activeFlavours*n] = std::numeric_limits<double>::infinity(); // Integration error: set gluon norm to infty
       }
@@ -54,7 +54,7 @@ using std::vector;
     PDFSet(other),
     fParametrisation(other.fParametrisation),
     fGSLWork( gsl_integration_workspace_alloc (10000) ),
-    nn_2(other.nn_2),
+    nn_1(other.nn_1),
     nn_norm(other.nn_norm)
     {
       for (size_t n=0; n<fMembers; n++)
@@ -77,11 +77,10 @@ using std::vector;
 
       for (int i=0; i<14; i++) pdf[i] = 0;
       for (int i =0; i<n_activeFlavours; i++ )
-        // pdf[activeFlavours[i]] = nn_norm[n_activeFlavours*n + i]*std::abs(std::abs(fitbasis[i]) - nn_2[n_activeFlavours*n + i]);
-        pdf[activeFlavours[i]] = nn_norm[n_activeFlavours*n + i]*(fitbasis[i] - nn_2[n_activeFlavours*n + i]);
+        pdf[activeFlavours[i]] = nn_norm[n_activeFlavours*n + i]*(fitbasis[i] - nn_1[n_activeFlavours*n + i]);
      
       // Valence preprocessing
-      pdf[3] *= pow(x/2.0, fabs(0.5+0.1*gsl_vector_get(fParameters[n], fParametrisation.GetNParameters()-1))); // Valence low-x sum rule
+      pdf[3] *= pow(x, fabs(0.5+0.1*gsl_vector_get(fParameters[n], fParametrisation.GetNParameters()-1))); // Valence low-x sum rule
       // pdf[10] = pdf[1]; // T8 = Singlet
       // pdf[5] = pdf[3]; // V8 = Valence
       delete[] fitbasis; 
@@ -91,7 +90,7 @@ using std::vector;
     void ExportPDF(int const& imem, std::ostream& os)
     {
       const double ymin = XGrid::appl_fy(1E-5); 
-      const double ymax = XGrid::appl_fy(2.0);
+      const double ymax = XGrid::appl_fy(1.0);
       const int nx = 200;
  
       for (int i=0; i<nx; i++)
@@ -128,6 +127,6 @@ using std::vector;
     NostateMLP fParametrisation;
     gsl_integration_workspace* fGSLWork; 
     vector<gsl_vector*> fParameters;
-    vector<double> nn_2;     // NN(2) for large-x preprocessing
+    vector<double> nn_1;     // NN(2) for large-x preprocessing
     vector<double> nn_norm;  // Multiplicative normalisation for PDF 
   };

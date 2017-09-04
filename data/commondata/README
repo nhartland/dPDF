@@ -1,7 +1,9 @@
 All F2d and F2R data is originally presented per nucleon and in terms of
- x = Q^2/(2M_proton\nu).
+ x_p = Q^2/(2M_proton\nu).
 
 In this directory the structure function data has been converted to x_deuteron
- x = Q^2/2M_deuteron\nu).
+ x_d = Q^2/2M_deuteron\nu).
+
+Specifically, SLACD, BCDMSD and NMCPD_D use x_d, NMCPD_P uses x_p 
 
 DYE886 data is currently unconverted, and the data is still per nucleon (might change in the future)

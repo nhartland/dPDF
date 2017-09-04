@@ -309,7 +309,7 @@ void SetT0(NNPDF::DataSet& set, NNPDF::PDFSet const& proton, NNPDF::PDFSet const
     NNPDF::real* theory = new NNPDF::real[set.GetNData()*deuteron.GetMembers()];
     ComputePredictions(&proton, &deuteron, &set, theory);
     NNPDF::ThPredictions t0pred(&deuteron, &set, theory); delete[] theory;
-    set.SetT0(t0pred);
+    // set.SetT0(t0pred);
 }
 
 

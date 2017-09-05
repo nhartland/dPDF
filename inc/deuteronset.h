@@ -12,9 +12,15 @@
 using NNPDF::real;
 using std::vector;
 
-  static const std::vector<int> activeFlavours = {1,2,3,5,10};
+  // static const std::vector<int> activeFlavours = {1,2,3,5,10};
+  // static const int n_activeFlavours = static_cast<int>(activeFlavours.size());
+  // static const std::vector<int> pdf_architecture = {2,40, n_activeFlavours};
+
+  static const std::vector<int> activeFlavours = {1,2,10};
   static const int n_activeFlavours = static_cast<int>(activeFlavours.size());
-  static const std::vector<int> pdf_architecture = {2,40, n_activeFlavours};
+  static const std::vector<int> pdf_architecture = {2,20, n_activeFlavours};
+
+
   class DeuteronSet : public NNPDF::PDFSet
   {
   public:
@@ -40,11 +46,11 @@ using std::vector;
 
         // Compute sum rules
         bool gslerror = false;
-        const double pval = IntegratePDF(n,3,1,PDFSet::FX,gslerror,fGSLWork, 0.0, 1.0);
+        // const double pval = IntegratePDF(n,3,1,PDFSet::FX,gslerror,fGSLWork, 0.0, 1.0);
         const double xsng = IntegratePDF(n,1,1,PDFSet::XFX,gslerror,fGSLWork, 0.0, 1.0);
         const double xglu = IntegratePDF(n,2,1,PDFSet::XFX,gslerror,fGSLWork, 0.0, 1.0);
         nn_norm[n_activeFlavours*n + 0] = (1.0-xsng)/xglu;
-        nn_norm[n_activeFlavours*n + 2] = 6.0/pval;
+        // nn_norm[n_activeFlavours*n + 2] = 6.0/pval;
         if(gslerror) nn_norm[n_activeFlavours*n] = std::numeric_limits<double>::infinity(); // Integration error: set gluon norm to infty
       }
     };
@@ -80,7 +86,7 @@ using std::vector;
         pdf[activeFlavours[i]] = nn_norm[n_activeFlavours*n + i]*(fitbasis[i] - nn_1[n_activeFlavours*n + i]);
      
       // Valence preprocessing
-      pdf[3] *= pow(x, fabs(0.5+0.1*gsl_vector_get(fParameters[n], fParametrisation.GetNParameters()-1))); // Valence low-x sum rule
+      // pdf[3] *= pow(x, fabs(0.5+0.1*gsl_vector_get(fParameters[n], fParametrisation.GetNParameters()-1))); // Valence low-x sum rule
       // pdf[10] = pdf[1]; // T8 = Singlet
       // pdf[5] = pdf[3]; // V8 = Valence
       delete[] fitbasis; 

@@ -31,6 +31,7 @@ using std::vector;
     nn_1(fMembers*n_activeFlavours,0),
     nn_norm(fMembers*n_activeFlavours,1)
     {
+      const double Q0dum = 0;
       for (size_t n=0; n<fMembers; n++)
       {
         // Copy parameters
@@ -39,17 +40,16 @@ using std::vector;
 
         // Compute large-x preprocessing
         std::array<NNPDF::real, 14> pdf;
-        GetPDF(1.0,1,n, &pdf[0]); // Evaluate NN(1)
+        GetPDF(1.0,Q0dum,n, &pdf[0]); // Evaluate NN(1)
         for (int ifl=0; ifl<n_activeFlavours; ifl++)
           nn_1[n_activeFlavours*n + ifl] = pdf[activeFlavours[ifl]];
-        GetPDF(0,1,n, &pdf[0]); // Evaluate NN(0)
 
         // Compute sum rules
         bool gslerror = false;
-        // const double pval = IntegratePDF(n,3,1,PDFSet::FX,gslerror,fGSLWork, 0.0, 1.0);
-        const double xsng = IntegratePDF(n,1,1,PDFSet::XFX,gslerror,fGSLWork, 0.0, 1.0);
-        const double xglu = IntegratePDF(n,2,1,PDFSet::XFX,gslerror,fGSLWork, 0.0, 1.0);
-        nn_norm[n_activeFlavours*n + 0] = (1.0-xsng)/xglu;
+        // const double pval = IntegratePDF(n,EVLN_VAL,Q0dum,PDFSet::FX,gslerror,fGSLWork, 0.0, 1.0);
+        const double xsng = IntegratePDF(n,EVLN_SNG,Q0dum,PDFSet::XFX,gslerror,fGSLWork, 0.0, 1.0);
+        const double xglu = IntegratePDF(n,EVLN_GLU,Q0dum,PDFSet::XFX,gslerror,fGSLWork, 0.0, 1.0);
+        nn_norm[n_activeFlavours*n + FIT_SNG] = (1.0-xglu)/xsng;
         // nn_norm[n_activeFlavours*n + 2] = 6.0/pval;
       }
     };
@@ -85,9 +85,9 @@ using std::vector;
         pdf[activeFlavours[i]] = nn_norm[n_activeFlavours*n + i]*(fitbasis[i] - nn_1[n_activeFlavours*n + i]);
      
       // Valence preprocessing
-      // pdf[3] *= pow(x, fabs(0.5+0.1*gsl_vector_get(fParameters[n], fParametrisation.GetNParameters()-1))); // Valence low-x sum rule
-      pdf[10] = pdf[1]; // T8 = Singlet
-      // pdf[5] = pdf[3]; // V8 = Valence
+      // pdf[EVLN_VAL] *= pow(x, fabs(0.5+0.1*gsl_vector_get(fParameters[n], fParametrisation.GetNParameters()-1))); // Valence low-x sum rule
+      pdf[EVLN_T8] = pdf[EVLN_SNG]; // T8 = Singlet
+      // pdf[EVLN_V8] = pdf[EVLN_VAL]; // V8 = Valence
       delete[] fitbasis; 
     	return;
     };
@@ -133,6 +133,8 @@ using std::vector;
     }
 
   private:
+    enum fitBasis { FIT_SNG, FIT_GLU };
+
     NostateMLP fParametrisation;
     gsl_integration_workspace* fGSLWork; 
     vector<gsl_vector*> fParameters;

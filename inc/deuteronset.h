@@ -51,7 +51,6 @@ using std::vector;
         const double xglu = IntegratePDF(n,2,1,PDFSet::XFX,gslerror,fGSLWork, 0.0, 1.0);
         nn_norm[n_activeFlavours*n + 0] = (1.0-xsng)/xglu;
         // nn_norm[n_activeFlavours*n + 2] = 6.0/pval;
-        if(gslerror) nn_norm[n_activeFlavours*n] = std::numeric_limits<double>::infinity(); // Integration error: set gluon norm to infty
       }
     };
 

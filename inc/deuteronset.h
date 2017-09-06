@@ -16,9 +16,9 @@ using std::vector;
   // static const int n_activeFlavours = static_cast<int>(activeFlavours.size());
   // static const std::vector<int> pdf_architecture = {2,40, n_activeFlavours};
 
-  static const std::vector<int> activeFlavours = {1,2,10};
+  static const std::vector<int> activeFlavours = {1,2};
   static const int n_activeFlavours = static_cast<int>(activeFlavours.size());
-  static const std::vector<int> pdf_architecture = {2,20, n_activeFlavours};
+  static const std::vector<int> pdf_architecture = {2,10, n_activeFlavours};
 
 
   class DeuteronSet : public NNPDF::PDFSet
@@ -87,26 +87,30 @@ using std::vector;
      
       // Valence preprocessing
       // pdf[3] *= pow(x, fabs(0.5+0.1*gsl_vector_get(fParameters[n], fParametrisation.GetNParameters()-1))); // Valence low-x sum rule
-      // pdf[10] = pdf[1]; // T8 = Singlet
+      pdf[10] = pdf[1]; // T8 = Singlet
       // pdf[5] = pdf[3]; // V8 = Valence
       delete[] fitbasis; 
     	return;
     };
 
-    void ExportPDF(int const& imem, std::ostream& os)
+    void Export(std::string const& prefix)
     {
       const double ymin = XGrid::appl_fy(1E-5); 
       const double ymax = XGrid::appl_fy(1.0);
       const int nx = 200;
  
-      for (int i=0; i<nx; i++)
+      for (int imem = 0; imem<fMembers; imem++)
       {
-        const NNPDF::real x = XGrid::appl_fx(ymin + ((ymax-ymin)/((double) nx - 1))*i);
-        std::array<NNPDF::real, 14> pdf; GetPDF(x,1,imem, &pdf[0]);
-        os << x;
-        for (int i =0; i<n_activeFlavours; i++ )
-          os << "  "<< pdf[activeFlavours[i]];
-        os <<std::endl;
+        std::ofstream os; os.open(prefix + "/replica_"+std::to_string(imem)+".dat");
+        for (int i=0; i<nx; i++)
+        {
+          const NNPDF::real x = XGrid::appl_fx(ymin + ((ymax-ymin)/((double) nx - 1))*i);
+          std::array<NNPDF::real, 14> pdf; GetPDF(x,1,imem, &pdf[0]);
+          os << x;
+          for (int i =0; i<14; i++ ) os << "  "<< pdf[i];
+          os <<std::endl;
+        }
+        os.close();
       }
     }
 

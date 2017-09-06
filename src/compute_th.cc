@@ -41,6 +41,7 @@ int main(int argc, char* argv[]) {
   mkdir((base_path+"/dat/systypes").c_str(), 0777);
   mkdir((base_path+"/thp").c_str(), 0777);
   mkdir((base_path+"/thd").c_str(), 0777);
+  mkdir((base_path+"/pdf").c_str(), 0777);
 
   // Initialise and filter datasets
   std::vector<NNPDF::Experiment> experimental_data;
@@ -49,7 +50,8 @@ int main(int argc, char* argv[]) {
   LHAPDFSet    proton(dPDFconfig.lookup("fit.proton"), NNPDF::PDFSet::ER_MC);
   IsoProtonSet isoproton(dPDFconfig.lookup("fit.proton"), NNPDF::PDFSet::ER_MC);
   DeuteronSet  deuteron = DeuteronSet::ReadSet(fitname, n_replicas);
-
+  deuteron.Export(base_path+"/pdf");
+  
   std::array<NNPDF::PDFSet*,2> deuterons = {&deuteron, &isoproton};
   std::array<std::string,2>    labels    = {"thd", "thp"};
 

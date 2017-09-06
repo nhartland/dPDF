@@ -5,5 +5,7 @@ In this directory the structure function data has been converted to x_deuteron
  x_d = Q^2/2M_deuteron\nu).
 
 Specifically, SLACD, BCDMSD and NMCPD_D use x_d, NMCPD_P uses x_p 
+For the plot FK tables, F2RX uses x_p and F2RX_D uses x_d
+
 
 DYE886 data is currently unconverted, and the data is still per nucleon (might change in the future)

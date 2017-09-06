@@ -18,7 +18,7 @@ using std::vector;
 
   static const std::vector<int> activeFlavours = {1,2};
   static const int n_activeFlavours = static_cast<int>(activeFlavours.size());
-  static const std::vector<int> pdf_architecture = {2,10, n_activeFlavours};
+  static const std::vector<int> pdf_architecture = {2,20, n_activeFlavours};
 
 
   class DeuteronSet : public NNPDF::PDFSet

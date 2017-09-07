@@ -60,9 +60,6 @@ for iset in range(0, len(pdf_paths)):
 
 for ipdf in range(0,len(pdfnames)):
   print("Writing " + pdfnames[ipdf])
-
-  legend_handles = [] # Setup legend
-  for iset in range(0, len(pdf_names)):
-    legend_handles.append(mpatches.Patch(color=colours[iset], label=pdf_names[iset]))
+  legend_handles = [mpatches.Patch(color=colours[iset], label=pdf_names[iset]) for iset in range(0,len(pdf_names))] # Setup legend
   pdf_figures[ipdf].get_axes()[0].legend(handles = legend_handles)
   pdf_figures[ipdf].savefig(plotDir + pdfnames[ipdf]+'.pdf')

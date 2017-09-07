@@ -14,15 +14,15 @@
 
 using NNPDF::ThPredictions;
 
-enum process_type {F2, F2R, DYR};
+enum process_type {F2, F2R, DYR, CX};
 const std::map<std::string, process_type> process_map = {{"BCDMSD", F2},
                                                          {"SLACD", F2}, 
                                                          {"NMCPD_D", F2R}, 
                                                          {"DYE886R", DYR},
-                                                         {"F2R1", F2},
-                                                         {"F2R10", F2},
-                                                         {"F2R100", F2},
-                                                         {"F2R1000", F2}
+                                                         {"F2R1", CX},       // These are tricky, use an isoproton for the denominator
+                                                         {"F2R10", CX},
+                                                         {"F2R100", CX},
+                                                         {"F2R1000", CX}
                                                        };
 void ComputePredictions(const PDFSet* proton, const PDFSet* deuteron, const FKSet* fkset, real * theory)
 {
@@ -51,7 +51,15 @@ void ComputePredictions(const PDFSet* proton, const PDFSet* deuteron, const FKSe
       for (size_t idat=0; idat<nDAT; idat++)
         for (size_t imem=0; imem<nPDF; imem++)
           theory[idat*nPDF + imem] /= 2.0*F2p.GetObs()[idat*nPDF + imem];
-      break; }
+      break;}
+    // Correction factor - simmilar to F2R but without / 2 for use with isoprotonset
+    case CX: {
+      ThPredictions::Convolute(deuteron, fkset->GetFK(0),theory);
+      const ThPredictions F2p(proton,   fkset->GetFK(1));
+      for (size_t idat=0; idat<nDAT; idat++)
+        for (size_t imem=0; imem<nPDF; imem++)
+          theory[idat*nPDF + imem] /= F2p.GetObs()[idat*nPDF + imem];
+      break;}
   }
 }
 

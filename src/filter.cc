@@ -58,6 +58,7 @@ void ReadPlots(libconfig::Config const& settings, std::vector<NNPDF::FKSet>& plo
   for (auto setname : plotsets)
   {
     std::vector<NNPDF::FKTable*> fkTables;
+    fkTables.push_back(new NNPDF::FKTable("theory_"+std::to_string(theoryIndex)+"/FK_"+setname+"_D.dat", std::vector<std::string>()));
     fkTables.push_back(new NNPDF::FKTable("theory_"+std::to_string(theoryIndex)+"/FK_"+setname+".dat", std::vector<std::string>()));
     plots.emplace_back(FKOperator, fkTables);
     plots.back().SetDataName(setname);

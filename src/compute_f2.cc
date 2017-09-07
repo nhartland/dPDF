@@ -19,9 +19,13 @@
 using namespace Colour;
 using namespace std;
 
+void gsl_handler (const char * msg, const char * source, int line, int)
+{ std::cerr << "gsl: " << source<<":"<<line<<": " <<msg <<std::endl;}
+
 int main(int argc, char* argv[]) {
   LHAPDF::setVerbosity(0);
   NNPDF::SetVerbosity(0);
+  gsl_set_error_handler (&gsl_handler);
 
   if (argc < 2)
   {
@@ -37,32 +41,28 @@ int main(int argc, char* argv[]) {
   const int n_replicas = dPDFconfig.lookup("fit.nrep");
 
   // Make directories
+  mkdir((base_path+"/dat").c_str(), 0777);
+  mkdir((base_path+"/dat/systypes").c_str(), 0777);
   mkdir((base_path+"/thr").c_str(), 0777);
 
   // Initialise and filter datasets
   std::vector<NNPDF::FKSet> plot_data;
   ReadPlots(dPDFconfig, plot_data);
 
-  // IsoProtonSet isoproton(dPDFconfig.lookup("fit.proton"), NNPDF::PDFSet::ER_MC);
+  IsoProtonSet isoproton(dPDFconfig.lookup("fit.proton"), NNPDF::PDFSet::ER_MC);
   DeuteronSet  deuteron = DeuteronSet::ReadSet(fitname, n_replicas);
-  IsoProtonSet isoproton("NNPDF30_nnlo_as_0118_hera", NNPDF::PDFSet::ER_MC);
   for (auto set : plot_data)
-  {
+  {  
       NNPDF::real* predictions = new NNPDF::real[n_replicas*set.GetNDataFK()];
-      ComputePredictions(0, &deuteron, &set, predictions);
-      NNPDF::ThPredictions d_pred(&deuteron, &set, predictions);
-
-      ComputePredictions(0, &isoproton, &set, predictions);
-      NNPDF::ThPredictions p_pred(&isoproton, &set, predictions);
+      ComputePredictions(&isoproton, &deuteron, &set, predictions);
+      NNPDF::ThPredictions c_pred(&deuteron, &set, predictions);
       delete[] predictions;
-
-      NNPDF::ThPredictions c_pred = d_pred / p_pred;
 
       ofstream file;
       std::cout << "Writing to " << base_path + "/thr/TH_"+set.GetDataName()+".dat" <<std::endl;
       file.open (base_path + "/thr/TH_"+set.GetDataName()+".dat" );
       c_pred.Print(file); file.close();
-    }
+  }
 
   exit(0);
 }

@@ -39,11 +39,13 @@ def genPlotPage(prefix, dataset, cData, theories):
 
 #################################################################################################################################
 
+# Results directories
+pdf_paths  = sys.argv[1:] 
+pdf_names = [pdf_path.rsplit('/')[-2] for pdf_path in pdf_paths]
+
 # Fetch datasets
 root = sys.argv[1]
 datroot = root + "dat/"
-throot  = root + "thd/"
-prroot  = root + "thp/"
 
 # Make dir for results
 plotDir = root + "figures/"
@@ -57,6 +59,10 @@ for dataset in os.listdir(datroot):
 
 for cDat in cData:
   prefix = plotDir + cDat.setname + "/"
-  deuteron  = ThPredictions(throot + "TH_" + cDat.setname + ".dat") 
-  isoproton = ThPredictions(prroot + "TH_" + cDat.setname + ".dat") 
-  genPlotPage(prefix, cDat.setname, cDat, [deuteron, isoproton])
+  theory = []
+  for ipdf in range(0,len(pdf_paths)):
+    source = pdf_paths[ipdf] + "thd/TH_" + cDat.setname + ".dat"
+    if (os.path.exists(source)):
+      theory.append(ThPredictions(source))
+      theory[-1].pdfset = pdf_names[ipdf]
+  genPlotPage(prefix, cDat.setname, cDat, theory)

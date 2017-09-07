@@ -4,6 +4,7 @@
 
 // Configuration file
 #include <libconfig.h++>
+#include <gsl/gsl_integration.h>
 
 #include "NNPDF/fastkernel.h"
 #include "NNPDF/thpredictions.h"
@@ -56,6 +57,18 @@ int main(int argc, char* argv[]) {
   IsoProtonSet isoproton(dPDFconfig.lookup("fit.proton"), NNPDF::PDFSet::ER_MC);
   DeuteronSet  deuteron = DeuteronSet::ReadSet(fitname, n_replicas);
   deuteron.Export(base_path+"/pdf");
+
+  // bool gslerror;
+  // gsl_integration_workspace *gsl = gsl_integration_workspace_alloc (10000);
+  // for (int i=0; i<n_replicas; i++)
+  // {
+  //   const double xg = deuteron.IntegratePDF(i,LHAPDFSet::EVLN_GLU,1,PDFSet::XFX,gslerror,gsl, 0.0, 1.0);
+  //   const double xs = deuteron.IntegratePDF(i,LHAPDFSet::EVLN_SNG,1,PDFSet::XFX,gslerror,gsl, 0.0, 1.0);
+  //   std::cout << i 
+  //             << "  xGLU: " << xg
+  //             << "  xSNG: " << xs
+  //             << "  xPDF: " << xg+xs <<std::endl;
+  // }
   
   std::array<NNPDF::PDFSet*,2> deuterons = {&deuteron, &isoproton};
   std::array<std::string,2>    labels    = {"thd", "thp"};

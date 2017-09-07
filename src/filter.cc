@@ -64,6 +64,10 @@ void ReadPlots(libconfig::Config const& settings, std::vector<NNPDF::FKSet>& plo
     plots.back().SetDataName(setname);
     std::cout << "Plotting: " << plots.back().GetDataName() <<std::endl;
   }
+
+  // const libconfig::Setting& sets = settings.lookup("plot.sets");
+  // for (int i=0; i<sets.getLength(); i++) NNPDF::DataSet dset = LoadDataSet(sets[i], settings);
+
 }
 
 // Initialises all datasets
@@ -74,18 +78,18 @@ void ReadData(libconfig::Config const& settings, std::vector<NNPDF::Experiment>&
   cout <<              "                        NUCLEAR NNPDF FILTER                         " <<endl;
   cout << FG_YELLOW << "---------------------------------------------------------------------"<<FG_DEFAULT <<endl;
 
-  const bool vb = NNPDF::PDFSet::Verbose;
-  NNPDF::PDFSet::Verbose = true;
+  // const bool vb = NNPDF::PDFSet::Verbose;
+  // NNPDF::PDFSet::Verbose = true;
 
-  // Read T0 PDF set
-  libconfig::Setting& fitsettings = settings.lookup("fit");
-  NNPDF::LHAPDFSet t0set_proton(fitsettings["proton"],  NNPDF::LHAPDFSet::ER_MC);
-  DeuteronSet      t0set_deuteron = DeuteronSet::ReadSet(fitsettings["t0set"], t0set_proton.GetMembers());
+  // Read T0 PDF set - T0 largely unimportant
+  // libconfig::Setting& fitsettings = settings.lookup("fit");
+  // NNPDF::LHAPDFSet t0set_proton(fitsettings["proton"],  NNPDF::LHAPDFSet::ER_MC);
+  // DeuteronSet      t0set_deuteron = DeuteronSet::ReadSet(fitsettings["t0set"], t0set_proton.GetMembers());
 
-  NNPDF::PDFSet::Verbose = vb;
+  // NNPDF::PDFSet::Verbose = vb;
 
-  cout <<              "                         T0 Set Initialised                          " <<endl;
-  cout << FG_YELLOW << "---------------------------------------------------------------------"<<FG_DEFAULT <<endl;
+  // cout <<              "                         T0 Set Initialised                          " <<endl;
+  // cout << FG_YELLOW << "---------------------------------------------------------------------"<<FG_DEFAULT <<endl;
 
   // Read datasets
   libconfig::Setting& sets = settings.lookup("data.sets");
@@ -111,7 +115,7 @@ void ReadData(libconfig::Config const& settings, std::vector<NNPDF::Experiment>&
 
     NNPDF::DataSet dset = LoadDataSet(set, settings);
     NNPDF::DataSet fset = FilterData(dset, settings);
-    SetT0(fset, t0set_proton, t0set_deuteron);
+    // SetT0(fset, t0set_proton, t0set_deuteron);
 
     cout << setw(20) << left << setname << "  "
          << setw(10) << left << systype << "   "

@@ -9,19 +9,19 @@
 #include <array>
 #include <iomanip>
 
-using NNPDF::real;
 using std::vector;
+using namespace NNPDF;
 
   // static const std::vector<int> activeFlavours = {1,2,3,5,10};
   // static const int n_activeFlavours = static_cast<int>(activeFlavours.size());
   // static const std::vector<int> pdf_architecture = {2,40, n_activeFlavours};
 
-  static const std::vector<int> activeFlavours = {EVLN_SNG, EVLN_GLU, EVLN_T8};
+  static const std::vector<int> activeFlavours = {PDFSet::EVLN_SNG, PDFSet::EVLN_GLU, PDFSet::EVLN_T8};
   static const int n_activeFlavours = static_cast<int>(activeFlavours.size());
   static const std::vector<int> pdf_architecture = {2,10, n_activeFlavours};
 
 
-  class DeuteronSet : public NNPDF::PDFSet
+  class DeuteronSet : public PDFSet
   {
   public:
     DeuteronSet(std::vector<gsl_vector*> const& parameters, erType error = ER_NONE):
@@ -39,7 +39,7 @@ using std::vector;
         gsl_vector_memcpy(newpar, parameters[n]); fParameters.push_back(newpar);
 
         // Compute large-x preprocessing
-        std::array<NNPDF::real, 14> pdf;
+        std::array<real, 14> pdf;
         GetPDF(1.0,Q0dum,n, &pdf[0]); // Evaluate NN(1)
         for (int ifl=0; ifl<n_activeFlavours; ifl++)
           nn_1[n_activeFlavours*n + ifl] = pdf[activeFlavours[ifl]];
@@ -75,9 +75,9 @@ using std::vector;
       gsl_integration_workspace_free(fGSLWork);
     }
 
-    virtual void GetPDF(NNPDF::real const& x, NNPDF::real const& Q2, int const& n, NNPDF::real* pdf) const
+    virtual void GetPDF(real const& x, real const& Q2, int const& n, real* pdf) const
     {
-      NNPDF::real* fitbasis = new NNPDF::real[n_activeFlavours];
+      real* fitbasis = new real[n_activeFlavours];
       fParametrisation.Compute(fParameters[n], x, fitbasis);
 
       for (int i=0; i<14; i++) pdf[i] = 0;
@@ -103,8 +103,8 @@ using std::vector;
         std::ofstream os; os.open(prefix + "/replica_"+std::to_string(imem)+".dat");
         for (int i=0; i<nx; i++)
         {
-          const NNPDF::real x = XGrid::appl_fx(ymin + ((ymax-ymin)/((double) nx - 1))*i);
-          std::array<NNPDF::real, 14> pdf; GetPDF(x,1,imem, &pdf[0]);
+          const real x = XGrid::appl_fx(ymin + ((ymax-ymin)/((double) nx - 1))*i);
+          std::array<real, 14> pdf; GetPDF(x,1,imem, &pdf[0]);
           os << x;
           for (int i =0; i<14; i++ ) os << "  "<< pdf[i];
           os <<std::endl;

@@ -25,6 +25,7 @@ for replica_file in os.listdir(pdfroot):
   replica = np.loadtxt(pdfroot+replica_file)
   replicas.append(replica)
 
+pdf_figures = []
 for ipdf in range(0,len(pdfnames)):
   gs = gridspec.GridSpec(1, 2) #, height_ratios=[1, 1])
   gs.update(wspace=0.00, hspace=0.00)
@@ -32,40 +33,34 @@ for ipdf in range(0,len(pdfnames)):
 
   # Setup figure
   fig = plt.figure(figsize=(w,h))
-  lax = fig.add_subplot(gs[0])
-  ax  = fig.add_subplot(gs[1])
-
-  ax.xaxis.grid(True)
-  ax.yaxis.grid(True)
-  lax.xaxis.grid(True)
-  lax.yaxis.grid(True)
+  pdf_figures.append(fig)
 
   # Axis formatting
   plt.setp(ax.get_yticklabels(), visible=False)
   lax.set_xscale('log')
   ax.xaxis.set_major_locator(MaxNLocator(5,prune='lower'))
   lax.set_ylabel("r" + pdfnames[ipdf])
-  ax.set_xlabel("x")
-  lax.set_xlabel("x")
 
-  for replica in replicas:
-    ax.plot(replica[:,0],replica[:,ipdf+1], color='blue', alpha=1/len(replicas))
-    lax.plot(replica[:,0],replica[:,ipdf+1], color='blue', alpha=1/len(replicas))
-
-  # set limits
+  lax = fig.add_subplot(gs[0])
+  ax  = fig.add_subplot(gs[1])
   ax.set_xlim([0.1, 1])
   lax.set_xlim([1E-5,0.1])
 
-  # # set limits
-  ax.set_ylim([-1, 5])
-  lax.set_ylim([-1,5])
+  for axis in fig.get_axes():
+    axis.xaxis.grid(True)
+    axis.yaxis.grid(True)
+    axis.set_xlabel("x")
+    axis.set_ylim([-1,5])
 
-#   # Legend
-#   legend = lax.legend(fontsize=10, loc='best')
-#   legend.get_frame().set_alpha(0.7)
-
+for ipdf in range(0,len(pdfnames)):
+  for ipdf in range(0,len(pdfnames)):
+    for axis in pdf_figures[ipdf].get_axes():
+      axis.plot(replica[:,0],replica[:,ipdf+1], color='blue', alpha=1/len(replicas))
   fig.savefig(plotDir + pdfnames[ipdf]+'.pdf')
 
 
+   # Legend
+#   legend = lax.legend(fontsize=10, loc='best')
+#   legend.get_frame().set_alpha(0.7)
 
 

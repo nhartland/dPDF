@@ -38,8 +38,7 @@ class dataplot:
         quit()
       
       if theory.setname != self.setname:
-        print("Error: theory and data setnames do not match!",theory.setname,self.setname)
-        quit()
+        print("Warning: theory and data setnames do not match!",theory.setname,self.setname)
 
       # Copy data
       self.pdf.append(theory.pdfset)

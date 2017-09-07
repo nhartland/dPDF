@@ -57,8 +57,8 @@ for ipdf in range(0,len(pdfnames)):
   lax.set_xlim([1E-5,0.1])
 
   # # set limits
-  # ax.set_ylim([-0.5, 3])
-  # lax.set_ylim([-0.5,3])
+  ax.set_ylim([-1, 5])
+  lax.set_ylim([-1,5])
 
 #   # Legend
 #   legend = lax.legend(fontsize=10, loc='best')

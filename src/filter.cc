@@ -206,17 +206,17 @@ void InitData(libconfig::Config const& settings, std::vector<NNPDF::Experiment> 
 
     for (int j=0; j<experiments[i].GetNSet(); j++)
     {
-      std::vector<int> trainingMask;
-      std::vector<int> validationMask;
-
       NNPDF::DataSet const& currentSet = experiments[i].GetSet(j);
-      for (int k=0; k<currentSet.GetNData(); k++)
-      {
-        if (NNPDF::RandomGenerator::GetRNG()->GetRandomUniform() < tvsplit)
-          trainingMask.push_back(k);
-        else
-          validationMask.push_back(k);
-      }
+      const int trMax = floor(tvsplit*currentSet.GetNData());
+
+      // Creating Masks
+      vector<int> mask;
+      for (int i = 0; i < currentSet.GetNData(); i++) 
+        mask.push_back(i);
+      RandomGenerator::GetRNG()->ShuffleVector(mask);
+
+      const vector<int> trainingMask(mask.begin(), mask.begin() + trMax);
+      const vector<int> validationMask(mask.begin() + trMax, mask.end());
 
       cout  << setw(20) << left << currentSet.GetSetName() << "  "
             << setw(10) << left << trainingMask.size() << "   "

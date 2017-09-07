@@ -24,7 +24,7 @@ class DeuteronSet;
 // Fast methods for the computation of chi2s.
 void FastAddChi2(const PDFSet*, const PDFSet*, const Experiment*, real* chi2);
 void Convolute(const PDFSet*, const PDFSet*, const Experiment*, real *);
-void ComputePredictions(const PDFSet*, const PDFSet*, const FKSet*, real*);
+void ComputePredictions(const PDFSet*, const PDFSet*, const DataSet*, real*);
 double ComputeMemberChi2(const PDFSet*, const PDFSet*, const int, std::vector<Experiment> const&);
 
 struct ErfComputer : public CostComputer

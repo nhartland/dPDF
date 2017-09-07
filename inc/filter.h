@@ -10,9 +10,9 @@
 
 
 // Initialise nPDF datasets
-void ReadPlots(libconfig::Config const& settings, std::vector<NNPDF::FKSet>& plots);
-void ReadData(libconfig::Config const& settings, std::vector<NNPDF::Experiment>&);
-void InitData(libconfig::Config const& settings, std::vector<NNPDF::Experiment>, std::vector<NNPDF::Experiment>&, std::vector<NNPDF::Experiment>&);
+void ReadPlots(libconfig::Config const& settings, std::vector<NNPDF::DataSet>&);
+void ReadData (libconfig::Config const& settings, std::vector<NNPDF::Experiment>&);
+void InitData (libconfig::Config const& settings, std::vector<NNPDF::Experiment>, std::vector<NNPDF::Experiment>&, std::vector<NNPDF::Experiment>&);
 
 // Kinematical cuts
 bool passKinCuts(libconfig::Config const& settings, NNPDF::DataSet const& set, int const& idat);

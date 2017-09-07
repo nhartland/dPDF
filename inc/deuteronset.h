@@ -16,9 +16,9 @@ using std::vector;
   // static const int n_activeFlavours = static_cast<int>(activeFlavours.size());
   // static const std::vector<int> pdf_architecture = {2,40, n_activeFlavours};
 
-  static const std::vector<int> activeFlavours = {1,2};
+  static const std::vector<int> activeFlavours = {EVLN_SNG, EVLN_GLU, EVLN_T8};
   static const int n_activeFlavours = static_cast<int>(activeFlavours.size());
-  static const std::vector<int> pdf_architecture = {2,20, n_activeFlavours};
+  static const std::vector<int> pdf_architecture = {2,10, n_activeFlavours};
 
 
   class DeuteronSet : public NNPDF::PDFSet
@@ -86,7 +86,7 @@ using std::vector;
      
       // Valence preprocessing
       // pdf[EVLN_VAL] *= pow(x, fabs(0.5+0.1*gsl_vector_get(fParameters[n], fParametrisation.GetNParameters()-1))); // Valence low-x sum rule
-      pdf[EVLN_T8] = pdf[EVLN_SNG]; // T8 = Singlet
+      // pdf[EVLN_T8] = pdf[EVLN_SNG]; // T8 = Singlet
       // pdf[EVLN_V8] = pdf[EVLN_VAL]; // V8 = Valence
       delete[] fitbasis; 
     	return;

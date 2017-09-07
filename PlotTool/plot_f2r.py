@@ -67,7 +67,7 @@ def cx_plot(prefix, cData, theories):
 
   plt.setp(ax.get_yticklabels(), visible=False)
   lax.set_xscale('log')
-  ax.xaxis.set_major_locator(MaxNLocator(5,prune='lower'))
+  ax.xaxis.set_major_locator(MaxNLocator(4,prune='lower'))
 
   ax.set_xlabel("$x$")
   lax.set_xlabel("$x$")
@@ -102,7 +102,7 @@ if not os.path.exists(plotDir):
   os.mkdir(plotDir)
 
 for dataset in os.listdir(datroot):
-  if dataset[0:6] == "DATA_F":
+  if dataset[0:6] == "DATA_F" and "_D" not in dataset:
     cDat = CommonData(datroot+dataset)
     prefix = plotDir + cDat.setname + "/"
     c_x  = ThPredictions(thrroot + "TH_" + cDat.setname + ".dat") 

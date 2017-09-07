@@ -39,7 +39,7 @@ for ipdf in range(0,len(pdfnames)):
   plt.setp(ax.get_yticklabels(), visible=False)
   lax.set_xscale('log')
   ax.xaxis.set_major_locator(MaxNLocator(5,prune='lower'))
-  lax.set_ylabel("r" + pdfnames[ipdf])
+  lax.set_ylabel(pdfnames[ipdf])
 
   for axis in fig.get_axes():
     axis.xaxis.grid(True)
@@ -56,7 +56,7 @@ for iset in range(0, len(pdf_paths)):
 
     for ipdf in range(0,len(pdfnames)):
       for axis in pdf_figures[ipdf].get_axes():
-        axis.plot(replica[:,0],replica[:,ipdf+1], color=colours[iset], alpha=0.05)
+        axis.plot(replica[:,0],replica[:,ipdf+1], color=colours[iset], alpha=0.1)
 
 for ipdf in range(0,len(pdfnames)):
   print("Writing " + pdfnames[ipdf])

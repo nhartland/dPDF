@@ -17,7 +17,7 @@ using NNPDF::ThPredictions;
 enum process_type {F2, F2R, DYR, CX};
 const std::map<std::string, process_type> process_map = {{"BCDMSD", F2},
                                                          {"SLACD", F2}, 
-                                                         {"NMCPD_D", F2R}, 
+                                                         {"NMCPD", F2R}, 
                                                          {"DYE886R", DYR},
                                                          {"F2R1", CX},       // These are tricky, use an isoproton for the denominator
                                                          {"F2R10", CX},
@@ -27,7 +27,7 @@ const std::map<std::string, process_type> process_map = {{"BCDMSD", F2},
 void ComputePredictions(const PDFSet* proton, const PDFSet* deuteron, const DataSet* fkset, real * theory)
 {
   auto iproc = process_map.find(fkset->GetSetName());
-  if (iproc == process_map.end()) throw NNPDF::RuntimeException("ComputePredictions", "Cannot find process type for set " + fkset->GetDataName());
+  if (iproc == process_map.end()) throw NNPDF::RuntimeException("ComputePredictions", "Cannot find process type for set " + fkset->GetSetName());
   const int nPDF = deuteron->GetMembers();
   const int nDAT = fkset->GetNDataFK();
   // Note: All data is given as F2 per nucleon (hence all the /2.0 s)

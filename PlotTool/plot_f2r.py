@@ -93,8 +93,8 @@ def cx_plot(prefix, cData, theories):
 
 # Fetch datasets
 root = sys.argv[1]
-datroot = "../data/commondata/"
-thrroot  = root + "thr/"
+datroot = root + "dat/"  
+thrroot = root + "thr/"
 
 # Make dir for results
 plotDir = root + "figures/"
@@ -102,7 +102,7 @@ if not os.path.exists(plotDir):
   os.mkdir(plotDir)
 
 for dataset in os.listdir(datroot):
-  if dataset[0:6] == "DATA_F" and "_D" not in dataset:
+  if dataset[0:6] == "DATA_F":
     cDat = CommonData(datroot+dataset)
     prefix = plotDir + cDat.setname + "/"
     c_x  = ThPredictions(thrroot + "TH_" + cDat.setname + ".dat") 

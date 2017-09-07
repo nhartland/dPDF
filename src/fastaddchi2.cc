@@ -24,9 +24,9 @@ const std::map<std::string, process_type> process_map = {{"BCDMSD", F2},
                                                          {"F2R100", CX},
                                                          {"F2R1000", CX}
                                                        };
-void ComputePredictions(const PDFSet* proton, const PDFSet* deuteron, const FKSet* fkset, real * theory)
+void ComputePredictions(const PDFSet* proton, const PDFSet* deuteron, const DataSet* fkset, real * theory)
 {
-  auto iproc = process_map.find(fkset->GetDataName());
+  auto iproc = process_map.find(fkset->GetSetName());
   if (iproc == process_map.end()) throw NNPDF::RuntimeException("ComputePredictions", "Cannot find process type for set " + fkset->GetDataName());
   const int nPDF = deuteron->GetMembers();
   const int nDAT = fkset->GetNDataFK();

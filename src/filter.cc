@@ -50,24 +50,10 @@ bool passKinCuts(libconfig::Config const& settings, NNPDF::DataSet const& set, i
 }
 
 // Reads plot data
-void ReadPlots(libconfig::Config const& settings, std::vector<NNPDF::FKSet>& plots)
+void ReadPlots(libconfig::Config const& settings, std::vector<NNPDF::DataSet>& plots)
 {
-  const std::array<std::string,4> plotsets = {"F2R1", "F2R10", "F2R100", "F2R1000"};
-  const int theoryIndex = settings.lookup("qcd.THID");
-  NNPDF::SigmaOp FKOperator = NNPDF::FKSet::parseOperator("NULL");
-  for (auto setname : plotsets)
-  {
-    std::vector<NNPDF::FKTable*> fkTables;
-    fkTables.push_back(new NNPDF::FKTable("theory_"+std::to_string(theoryIndex)+"/FK_"+setname+"_D.dat", std::vector<std::string>()));
-    fkTables.push_back(new NNPDF::FKTable("theory_"+std::to_string(theoryIndex)+"/FK_"+setname+".dat", std::vector<std::string>()));
-    plots.emplace_back(FKOperator, fkTables);
-    plots.back().SetDataName(setname);
-    std::cout << "Plotting: " << plots.back().GetDataName() <<std::endl;
-  }
-
-  // const libconfig::Setting& sets = settings.lookup("plot.sets");
-  // for (int i=0; i<sets.getLength(); i++) NNPDF::DataSet dset = LoadDataSet(sets[i], settings);
-
+  const libconfig::Setting& sets = settings.lookup("plot.sets");
+  for (int i=0; i<sets.getLength(); i++) plots.push_back(LoadDataSet(sets[i], settings));
 }
 
 // Initialises all datasets

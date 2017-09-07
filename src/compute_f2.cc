@@ -46,21 +46,22 @@ int main(int argc, char* argv[]) {
   mkdir((base_path+"/thr").c_str(), 0777);
 
   // Initialise and filter datasets
-  std::vector<NNPDF::FKSet> plot_data;
+  std::vector<NNPDF::DataSet> plot_data;
   ReadPlots(dPDFconfig, plot_data);
 
   IsoProtonSet isoproton(dPDFconfig.lookup("fit.proton"), NNPDF::PDFSet::ER_MC);
   DeuteronSet  deuteron = DeuteronSet::ReadSet(fitname, n_replicas);
   for (auto set : plot_data)
   {  
-      NNPDF::real* predictions = new NNPDF::real[n_replicas*set.GetNDataFK()];
+      set.Export(base_path + "/dat/");
+      NNPDF::real* predictions = new NNPDF::real[n_replicas*set.GetNData()];
       ComputePredictions(&isoproton, &deuteron, &set, predictions);
       NNPDF::ThPredictions c_pred(&deuteron, &set, predictions);
       delete[] predictions;
 
       ofstream file;
-      std::cout << "Writing to " << base_path + "/thr/TH_"+set.GetDataName()+".dat" <<std::endl;
-      file.open (base_path + "/thr/TH_"+set.GetDataName()+".dat" );
+      std::cout << "Writing to " << base_path + "/thr/TH_"+set.GetSetName()+".dat" <<std::endl;
+      file.open (base_path + "/thr/TH_"+set.GetSetName()+".dat" );
       c_pred.Print(file); file.close();
   }
 

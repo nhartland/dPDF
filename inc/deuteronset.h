@@ -14,7 +14,7 @@ using std::distance;
 using std::find;
 using namespace NNPDF;
 
-static const vector<int> activeFlavours = {PDFSet::EVLN_SNG, PDFSet::EVLN_GLU, PDFSet::EVLN_T8};
+static const vector<int> activeFlavours = {PDFSet::EVLN_SNG, PDFSet::EVLN_GLU};//, PDFSet::EVLN_T8};
 static const int n_activeFlavours = static_cast<int>(activeFlavours.size());
 static const vector<int> pdf_architecture = {2,10, n_activeFlavours};
 

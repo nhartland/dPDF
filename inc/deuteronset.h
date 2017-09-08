@@ -100,8 +100,16 @@ public:
     if ( fitting(FIT_GLU) ) pdf[EVLN_GLU] *= pdf[EVLN_GLU]; // Square output of gluon
     if ( fitting(FIT_SNG) ) pdf[EVLN_SNG] *= pdf[EVLN_SNG]; // Square output of singlet
     if ( fitting(FIT_VAL) ) pdf[EVLN_VAL] *= pow(x, fabs(0.5+0.1*gsl_vector_get(fParameters[n], fParametrisation.GetNParameters()-1)));
-    if ( !fitting(FIT_T8) ) pdf[EVLN_T8] = pdf[EVLN_SNG];   // T8 = Singlet
-    if ( !fitting(FIT_V8) ) pdf[EVLN_V8] = pdf[EVLN_VAL];   // V8 = Valence
+
+    if ( !fitting(FIT_T8) ) 
+      pdf[EVLN_T8] = pdf[EVLN_SNG];   // T8 = Singlet
+    else
+      pdf[EVLN_T8] *= pdf[EVLN_T8];
+
+    if ( !fitting(FIT_V8) ) 
+      pdf[EVLN_V8] = pdf[EVLN_VAL];   // V8 = Valence
+    else
+      pdf[EVLN_V8] *= pdf[EVLN_V8];
 
   	return;
   };

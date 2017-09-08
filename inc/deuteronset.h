@@ -54,8 +54,7 @@ public:
       {  
         const double xsng = IntegratePDF(n,EVLN_SNG,Q0dum,PDFSet::XFX,gslerror,fGSLWork, 0.0, 1.0);
         const double xglu = IntegratePDF(n,EVLN_GLU,Q0dum,PDFSet::XFX,gslerror,fGSLWork, 0.0, 1.0);
-        nn_norm[n_activeFlavours*n + FIT_GLU] = fmin(1.0,1.0/xglu);      // Ensures xglu <= 1
-        nn_norm[n_activeFlavours*n + FIT_SNG] = fmax((1.0-xglu)/xsng,0); // Ensures xsng >= 0
+        nn_norm[n_activeFlavours*n + FIT_SNG] = (1.0-xglu);
       }
       if ( fitting(FIT_VAL) )
       {
@@ -97,7 +96,6 @@ public:
     delete[] fitbasis; 
 
     // Valence preprocessing
-    if ( fitting(FIT_GLU) ) pdf[EVLN_GLU] *= pdf[EVLN_GLU]; // Square output of gluon
     if ( fitting(FIT_VAL) ) pdf[EVLN_VAL] *= pow(x, fabs(0.5+0.1*gsl_vector_get(fParameters[n], fParametrisation.GetNParameters()-1)));
     if ( !fitting(FIT_T8) ) pdf[EVLN_T8] = pdf[EVLN_SNG];   // T8 = Singlet
     if ( !fitting(FIT_V8) ) pdf[EVLN_V8] = pdf[EVLN_VAL];   // V8 = Valence

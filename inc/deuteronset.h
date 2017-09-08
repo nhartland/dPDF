@@ -9,17 +9,23 @@
 #include <array>
 #include <iomanip>
 
-using std::vector;
+using namespace std;
 using namespace NNPDF;
 
   // static const std::vector<int> activeFlavours = {1,2,3,5,10};
   // static const int n_activeFlavours = static_cast<int>(activeFlavours.size());
   // static const std::vector<int> pdf_architecture = {2,40, n_activeFlavours};
 
-  static const std::vector<int> activeFlavours = {PDFSet::EVLN_SNG, PDFSet::EVLN_GLU, PDFSet::EVLN_T8};
+  static const vector<int> activeFlavours = {PDFSet::EVLN_SNG, PDFSet::EVLN_GLU, PDFSet::EVLN_T8};
   static const int n_activeFlavours = static_cast<int>(activeFlavours.size());
-  static const std::vector<int> pdf_architecture = {2,10, n_activeFlavours};
+  static const vector<int> pdf_architecture = {2,10, n_activeFlavours};
 
+  static const ptrdiff_t FIT_SNG = distance(activeFlavours.begin(), find(activeFlavours.begin(), activeFlavours.end(), PDFSet::EVLN_SNG));
+  static const ptrdiff_t FIT_GLU = distance(activeFlavours.begin(), find(activeFlavours.begin(), activeFlavours.end(), PDFSet::EVLN_GLU));
+  static const ptrdiff_t FIT_VAL = distance(activeFlavours.begin(), find(activeFlavours.begin(), activeFlavours.end(), PDFSet::EVLN_VAL));
+  static const ptrdiff_t FIT_T8  = distance(activeFlavours.begin(), find(activeFlavours.begin(), activeFlavours.end(), PDFSet::EVLN_T8));
+  static const ptrdiff_t FIT_V8  = distance(activeFlavours.begin(), find(activeFlavours.begin(), activeFlavours.end(), PDFSet::EVLN_V8));
+  static bool fitting( ptrdiff_t pdf ) {return pdf < n_activeFlavours;};
 
   class DeuteronSet : public PDFSet
   {
@@ -40,17 +46,23 @@ using namespace NNPDF;
 
         // Compute large-x preprocessing
         std::array<real, 14> pdf;
-        GetPDF(1.0,Q0dum,n, &pdf[0]); // Evaluate NN(1)
+        GetPDF(1.0, Q0dum, n, &pdf[0]); // Evaluate NN(1)
         for (int ifl=0; ifl<n_activeFlavours; ifl++)
           nn_1[n_activeFlavours*n + ifl] = pdf[activeFlavours[ifl]];
 
         // Compute sum rules
         bool gslerror = false;
-        // const double pval = IntegratePDF(n,EVLN_VAL,Q0dum,PDFSet::FX,gslerror,fGSLWork, 0.0, 1.0);
-        const double xsng = IntegratePDF(n,EVLN_SNG,Q0dum,PDFSet::XFX,gslerror,fGSLWork, 0.0, 1.0);
-        const double xglu = IntegratePDF(n,EVLN_GLU,Q0dum,PDFSet::XFX,gslerror,fGSLWork, 0.0, 1.0);
-        nn_norm[n_activeFlavours*n + FIT_SNG] = (1.0-xglu)/xsng;
-        // nn_norm[n_activeFlavours*n + 2] = 6.0/pval;
+        if ( fitting(FIT_SNG) )
+        {  
+          const double xsng = IntegratePDF(n,EVLN_SNG,Q0dum,PDFSet::XFX,gslerror,fGSLWork, 0.0, 1.0);
+          const double xglu = IntegratePDF(n,EVLN_GLU,Q0dum,PDFSet::XFX,gslerror,fGSLWork, 0.0, 1.0);
+          nn_norm[n_activeFlavours*n + FIT_SNG] = (1.0-xglu)/xsng;
+        }
+        if ( fitting(FIT_VAL) )
+        {
+          const double pval = IntegratePDF(n,EVLN_VAL,Q0dum,PDFSet::FX,gslerror,fGSLWork, 0.0, 1.0);
+          nn_norm[n_activeFlavours*n + FIT_VAL] = 6.0/pval;
+        }
       }
     };
 
@@ -77,19 +89,20 @@ using namespace NNPDF;
 
     virtual void GetPDF(real const& x, real const& Q2, int const& n, real* pdf) const
     {
-      real* fitbasis = new real[n_activeFlavours];
+      real* fitbasis = new real[n_activeFlavours]();
       fParametrisation.Compute(fParameters[n], x, fitbasis);
 
       for (int i=0; i<14; i++) pdf[i] = 0;
       for (int i =0; i<n_activeFlavours; i++ )
         pdf[activeFlavours[i]] = nn_norm[n_activeFlavours*n + i]*(fitbasis[i] - nn_1[n_activeFlavours*n + i]);
-      pdf[FIT_GLU] *= pdf[FIT_GLU]; // Square output of gluon
+      delete[] fitbasis; 
 
       // Valence preprocessing
-      // pdf[EVLN_VAL] *= pow(x, fabs(0.5+0.1*gsl_vector_get(fParameters[n], fParametrisation.GetNParameters()-1))); // Valence low-x sum rule
-      // pdf[EVLN_T8] = pdf[EVLN_SNG]; // T8 = Singlet
-      // pdf[EVLN_V8] = pdf[EVLN_VAL]; // V8 = Valence
-      delete[] fitbasis; 
+      if ( fitting(FIT_VAL) ) pdf[EVLN_VAL] *= pow(x, fabs(0.5+0.1*gsl_vector_get(fParameters[n], fParametrisation.GetNParameters()-1)));
+      if ( !fitting(FIT_T8) ) pdf[EVLN_T8] = pdf[EVLN_SNG];   // T8 = Singlet
+      if ( !fitting(FIT_V8) ) pdf[EVLN_V8] = pdf[EVLN_VAL];   // V8 = Valence
+      if ( fitting(FIT_GLU) ) pdf[EVLN_GLU] *= pdf[EVLN_GLU]; // Square output of gluon
+
     	return;
     };
 
@@ -134,8 +147,6 @@ using namespace NNPDF;
     }
 
   private:
-    enum fitBasis { FIT_SNG, FIT_GLU };
-
     NostateMLP fParametrisation;
     gsl_integration_workspace* fGSLWork; 
     vector<gsl_vector*> fParameters;

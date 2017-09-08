@@ -9,7 +9,9 @@
 #include <array>
 #include <iomanip>
 
-using namespace std;
+using std::vector;
+using std::distance;
+using std::find;
 using namespace NNPDF;
 
 static const vector<int> activeFlavours = {PDFSet::EVLN_SNG, PDFSet::EVLN_GLU, PDFSet::EVLN_T8};

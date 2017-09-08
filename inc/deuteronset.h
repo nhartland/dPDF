@@ -83,7 +83,8 @@ using namespace NNPDF;
       for (int i=0; i<14; i++) pdf[i] = 0;
       for (int i =0; i<n_activeFlavours; i++ )
         pdf[activeFlavours[i]] = nn_norm[n_activeFlavours*n + i]*(fitbasis[i] - nn_1[n_activeFlavours*n + i]);
-     
+      pdf[FIT_GLU] *= pdf[FIT_GLU]; // Square output of gluon
+
       // Valence preprocessing
       // pdf[EVLN_VAL] *= pow(x, fabs(0.5+0.1*gsl_vector_get(fParameters[n], fParametrisation.GetNParameters()-1))); // Valence low-x sum rule
       // pdf[EVLN_T8] = pdf[EVLN_SNG]; // T8 = Singlet

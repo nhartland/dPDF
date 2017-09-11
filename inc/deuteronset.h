@@ -50,11 +50,12 @@ public:
 
       // Compute sum rules
       bool gslerror = false;
-      if ( fitting(FIT_SNG) && fitting(FIT_GLU) ) // A bit superfluous this
+      if ( fitting(FIT_SNG) && fitting(FIT_GLU) )
       {  
         const double xsng = IntegratePDF(n,EVLN_SNG,Q0dum,PDFSet::XFX,gslerror,fGSLWork, 0.0, 1.0);
         const double xglu = IntegratePDF(n,EVLN_GLU,Q0dum,PDFSet::XFX,gslerror,fGSLWork, 0.0, 1.0);
-        nn_norm[n_activeFlavours*n + FIT_SNG] = (1.0-xglu)/xsng;
+        nn_norm[n_activeFlavours*n + FIT_GLU] = xglu/fabs(xglu);        // Ensures \int xg > 0
+        nn_norm[n_activeFlavours*n + FIT_SNG] = (1.0-fabs(xglu))/xsng;  // Ensures \int xg + xsng = 1
       }
       if ( fitting(FIT_VAL) )
       {

@@ -54,7 +54,7 @@ public:
       {  
         const double xsng = IntegratePDF(n,EVLN_SNG,Q0dum,PDFSet::XFX,gslerror,fGSLWork, 0.0, 1.0);
         const double xglu = IntegratePDF(n,EVLN_GLU,Q0dum,PDFSet::XFX,gslerror,fGSLWork, 0.0, 1.0);
-        nn_norm[n_activeFlavours*n + FIT_SNG] = (1.0-xglu);
+        nn_norm[n_activeFlavours*n + FIT_SNG] = (1.0-xglu)/xsng;
       }
       if ( fitting(FIT_VAL) )
       {

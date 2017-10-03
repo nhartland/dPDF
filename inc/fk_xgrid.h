@@ -12,7 +12,7 @@
 
 namespace XGrid
 {
-  static double m_transvar = 6.0;
+  static double m_transvar = 10.0;
 
   static double appl_fy(double x) { return -std::log(x)+m_transvar*(1-x); }
   static double appl_fx(double y) {
